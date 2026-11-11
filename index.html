@@ -1430,7 +1430,6 @@ function showScreen(id) {
     document.getElementById(id).classList.add('active');
     window.scrollTo(0, 0);
     if (id === 's-intro') setBg('intro');
-    if (id === 's-result') setBg('result');
 }
 
 
@@ -1611,9 +1610,9 @@ async function unlockReport() {
     const payload = {
         tags: ['rda-quiz-completed', 'rda-quiz-' + currentTypeCode.toLowerCase()],
         customFields: [
-            { key: 'contact.rda_quiz_type',      field_value: currentTypeCode },
-            { key: 'contact.rda_quiz_type_name', field_value: t.name },
-            { key: 'contact.rda_quiz_tagline',   field_value: t.tagline }
+            { id: 'WBlpG2ZwFeCNbJebDNru', field_value: currentTypeCode },
+            { id: 'TQXzDg013Sdkq4i1nj83', field_value: t.name },
+            { id: 'hyYAc0QKKgeaZipXL5UF', field_value: t.tagline }
         ]
     };
 
@@ -1693,11 +1692,17 @@ async function inviteFriend(btn) {
             return;
         } catch(e) { /* 取消或不支援，改用複製 */ }
     }
-    navigator.clipboard.writeText(text).then(() => {
-        const orig = btn.textContent;
-        btn.textContent = '已複製！去貼給朋友 ✓';
-        setTimeout(() => btn.textContent = orig, 2500);
-    });
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            const orig = btn.textContent;
+            btn.textContent = '已複製！去貼給朋友 ✓';
+            setTimeout(() => btn.textContent = orig, 2500);
+        }).catch(() => {
+            prompt('複製以下文字，貼給你的朋友：', text);
+        });
+    } else {
+        prompt('複製以下文字，貼給你的朋友：', text);
+    }
 }
 
 function restartQuiz() {
@@ -1708,12 +1713,15 @@ function restartQuiz() {
 
 // Auto-restore: email link (#type=XX) or previous session
 document.addEventListener('DOMContentLoaded', function() {
+    const hash = window.location.hash;
+    const fromEmailLink = hash.startsWith('#type=');
     const savedEmail = localStorage.getItem('gp_email');
-    if (!savedEmail) return;
+
+    // Need either an email link or a previous session with saved email
+    if (!fromEmailLink && !savedEmail) return;
 
     let typeCode = null;
-    const hash = window.location.hash;
-    if (hash.startsWith('#type=')) {
+    if (fromEmailLink) {
         const code = hash.slice(6).toUpperCase();
         if (TYPES[code]) typeCode = code;
     }
@@ -1731,6 +1739,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     const axEntry = Object.entries(AXIS_LETTER).find(([,v]) => v === typeCode[0]);
     currentType = axEntry ? axEntry[0] : AXES[0].id;
+
+    // If from email link, auto-unlock (no need to re-enter email)
+    if (fromEmailLink && !savedEmail) {
+        localStorage.setItem('gp_email', 'email-link');
+    }
 
     renderResult();
 });
