@@ -1548,6 +1548,27 @@ function showResults() {
     }, 100);
 }
 
+const DISPOSABLE_DOMAINS = new Set([
+    'mailinator.com','guerrillamail.com','tempmail.com','throwam.com','yopmail.com',
+    'sharklasers.com','guerrillamailblock.com','grr.la','guerrillamail.info',
+    'spam4.me','trashmail.com','trashmail.me','trashmail.net','dispostable.com',
+    'maildrop.cc','mailnull.com','spamgourmet.com','temp-mail.org','fakeinbox.com',
+    'getairmail.com','filzmail.com','mt2015.com','mt2014.com','spamfree24.org',
+    'discardmail.com','spamherelots.com','spam.la','binkmail.com','safetypost.de'
+]);
+
+async function checkEmailMX(email) {
+    const domain = email.split('@')[1].toLowerCase();
+    if (DISPOSABLE_DOMAINS.has(domain)) return false;
+    try {
+        const res = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=MX`);
+        const data = await res.json();
+        return !!(data.Answer && data.Answer.length > 0);
+    } catch(e) {
+        return true; // DNS check failed → give benefit of doubt
+    }
+}
+
 async function unlockReport() {
     const email = document.getElementById('email-input').value.trim();
     const inp = document.getElementById('email-input');
@@ -1559,10 +1580,25 @@ async function unlockReport() {
         return;
     }
 
-    // Show loading state
-    btn.textContent = '傳送中...';
+    // Show checking state
+    btn.textContent = '驗證中...';
     btn.disabled = true;
     inp.disabled = true;
+
+    const valid = await checkEmailMX(email);
+    if (!valid) {
+        inp.style.borderColor = '#FF6080';
+        inp.value = '';
+        inp.placeholder = '請輸入真實可收信的 Email';
+        inp.disabled = false;
+        btn.textContent = '解鎖完整報告 →';
+        btn.disabled = false;
+        return;
+    }
+
+    // Show sending state
+    btn.textContent = '傳送中...';
+    btn.disabled = true;
 
     const t = TYPES[currentTypeCode];
 
