@@ -1798,6 +1798,8 @@ function buildShareText() {
         scores,
         '',
         '說出了我一個不想承認的部分。你也來測，我想知道你是哪個 →',
+        '',
+        'https://groovepath.leeyoucheng.com/quiz',
     ].join('\n');
 
     const hooks = [
@@ -1819,8 +1821,7 @@ function buildShareText() {
 
 async function inviteFriend(btn) {
     const text = buildShareText();
-    const shareUrl = 'https://groovepath.leeyoucheng.com/quiz';
-    const shareData = { title: '【GroovePath 舞者人格評估】', text, url: shareUrl };
+    const shareData = { title: '【GroovePath 舞者人格評估】', text };
 
     // Try native Web Share API (works on mobile if page has allow="web-share")
     const tryShare = async (nav) => {
@@ -1835,7 +1836,7 @@ async function inviteFriend(btn) {
     try { if (window.parent !== window && await tryShare(window.parent.navigator)) return; } catch(e) {}
 
     // Fallback: copy to clipboard
-    const copyText = text + '\n' + shareUrl;
+    const copyText = text;
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(copyText).then(() => {
             const orig = btn.textContent;
