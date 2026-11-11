@@ -783,6 +783,85 @@
             letter-spacing: 0.5px;
         }
 
+        /* Onboarding */
+        .onboard-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            padding: 40px 24px;
+            gap: 0;
+        }
+        .onboard-pre {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 18px;
+        }
+        .onboard-title {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text);
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+        .onboard-block {
+            width: 100%;
+            max-width: 360px;
+            margin-bottom: 28px;
+        }
+        .onboard-label {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        .onboard-input {
+            width: 100%;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 18px;
+            font-family: 'Noto Sans TC', sans-serif;
+            color: var(--text);
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color .2s;
+        }
+        .onboard-input:focus { border-color: var(--gold); }
+        .gender-row {
+            display: flex;
+            gap: 10px;
+        }
+        .gender-btn {
+            flex: 1;
+            padding: 12px 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.05);
+            color: var(--text-dim);
+            font-size: 15px;
+            font-family: 'Noto Sans TC', sans-serif;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .gender-btn.selected {
+            border-color: var(--gold);
+            background: rgba(212,175,55,0.15);
+            color: var(--gold);
+        }
+        .onboard-cta-wrap {
+            width: 100%;
+            max-width: 360px;
+        }
+
         /* Share */
         .share-wrap {
             text-align: center;
@@ -827,6 +906,32 @@
         <button class="btn" onclick="startQuiz()">START →</button>
         <div class="meta-note">1 分鐘看出你的律動靈魂是誰</div>
         <div class="meta-sub">找出你天生的舞動強項——以及那個你最不想被人看見的部分</div>
+    </div>
+
+    <!-- ══ ONBOARDING ══ -->
+    <div class="screen" id="s-onboard">
+        <div class="onboard-wrap">
+            <div class="onboard-pre">Game Start</div>
+            <div class="onboard-title">遊戲準備開始了</div>
+
+            <div class="onboard-block">
+                <div class="onboard-label">大家平常都怎麼叫你？</div>
+                <input class="onboard-input" id="player-name" type="text" placeholder="輸入你的暱稱" maxlength="20" autocomplete="off">
+            </div>
+
+            <div class="onboard-block">
+                <div class="onboard-label">你希望大家覺得你是——</div>
+                <div class="gender-row">
+                    <button class="gender-btn" id="g-male" onclick="selectGender('male')">男生</button>
+                    <button class="gender-btn" id="g-female" onclick="selectGender('female')">女生</button>
+                    <button class="gender-btn" id="g-other" onclick="selectGender('other')">不說</button>
+                </div>
+            </div>
+
+            <div class="onboard-cta-wrap">
+                <button class="btn btn-full" onclick="beginQuiz()">準備進入答題 →</button>
+            </div>
+        </div>
     </div>
 
     <!-- ══ QUIZ ══ -->
@@ -1363,7 +1468,32 @@ function buildQuestions() {
     return qs;
 }
 
+let playerName = '';
+let playerGender = '';
+
+function selectGender(g) {
+    playerGender = g;
+    ['male','female','other'].forEach(id => {
+        document.getElementById('g-' + id).classList.toggle('selected', id === g);
+    });
+}
+
 function startQuiz() {
+    setBg('intro');
+    showScreen('s-onboard');
+    setTimeout(() => document.getElementById('player-name').focus(), 300);
+}
+
+function beginQuiz() {
+    const nameInput = document.getElementById('player-name');
+    playerName = nameInput.value.trim();
+    if (!playerName) {
+        nameInput.style.borderColor = '#FF6080';
+        nameInput.placeholder = '請告訴我你的暱稱 :)';
+        nameInput.focus();
+        return;
+    }
+    nameInput.style.borderColor = '';
     shuffledQs = buildQuestions();
     curQ = 0;
     usedQuoteIdxs = [];
@@ -1485,7 +1615,8 @@ function renderResult() {
         <span class="tc-locked">?</span>
         <div class="tc-hint">還想知道你的質感碼是 O 還是 C？</div>`;
 
-    document.getElementById('r-tagline').textContent = `「${t.tagline}」`;
+    const namePrefix = playerName ? `${playerName}，` : '';
+    document.getElementById('r-tagline').textContent = `${namePrefix}「${t.tagline}」`;
     document.getElementById('r-figure').textContent = t.figure;
     document.getElementById('s1-title').textContent = t.s1t;
     document.getElementById('s1-body').textContent = t.s1;
@@ -1609,7 +1740,10 @@ async function unlockReport() {
 
     const GHL_TOKEN = 'pit-46dd853d-5bdb-4748-b139-67fdea9a22d2';
     const GHL_LOC   = 'jSTry772I6DUxY25TdVy';
+    const genderMap = { male: '男', female: '女', other: '不說' };
     const payload = {
+        firstName: playerName || undefined,
+        gender: playerGender ? genderMap[playerGender] : undefined,
         tags: ['rda-quiz-completed', 'rda-quiz-' + currentTypeCode.toLowerCase()],
         customFields: [
             { id: 'WBlpG2ZwFeCNbJebDNru', field_value: currentTypeCode },
@@ -1715,6 +1849,7 @@ async function inviteFriend(btn) {
 
 function restartQuiz() {
     ans={}; curQ=0; shuffledQs=[]; currentScores=null; currentType=null; currentTypeCode=null; currentQuality=null;
+    playerName=''; playerGender='';
     if(chart){chart.destroy();chart=null;}
     showScreen('s-intro');
 }
