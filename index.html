@@ -1461,6 +1461,10 @@ function showResults() {
     currentType = pid;
     currentTypeCode = AXIS_LETTER[pid] + AXIS_LETTER[sid];
     currentQuality = quality;
+    renderResult();
+}
+
+function renderResult() {
     setBg(currentTypeCode);
 
     const t = TYPES[currentTypeCode] || TYPES[Object.keys(TYPES)[0]];
@@ -1636,6 +1640,9 @@ async function unlockReport() {
 
     localStorage.setItem('gp_email', email);
     localStorage.setItem('gp_type', currentType);
+    localStorage.setItem('gp_typecode', currentTypeCode);
+    localStorage.setItem('gp_scores', JSON.stringify(currentScores));
+    history.replaceState(null, '', '#type=' + currentTypeCode);
     document.getElementById('gate-wrap').style.display = 'none';
     const u = document.getElementById('unlocked');
     u.classList.add('show');
@@ -1698,6 +1705,35 @@ function restartQuiz() {
     if(chart){chart.destroy();chart=null;}
     showScreen('s-intro');
 }
+
+// Auto-restore: email link (#type=XX) or previous session
+document.addEventListener('DOMContentLoaded', function() {
+    const savedEmail = localStorage.getItem('gp_email');
+    if (!savedEmail) return;
+
+    let typeCode = null;
+    const hash = window.location.hash;
+    if (hash.startsWith('#type=')) {
+        const code = hash.slice(6).toUpperCase();
+        if (TYPES[code]) typeCode = code;
+    }
+    if (!typeCode) {
+        const saved = localStorage.getItem('gp_typecode');
+        if (saved && TYPES[saved]) typeCode = saved;
+    }
+    if (!typeCode) return;
+
+    currentTypeCode = typeCode;
+    try { currentScores = JSON.parse(localStorage.getItem('gp_scores') || 'null'); } catch(e) {}
+    if (!currentScores) {
+        currentScores = {};
+        AXES.forEach(ax => { currentScores[ax.id] = 50; });
+    }
+    const axEntry = Object.entries(AXIS_LETTER).find(([,v]) => v === typeCode[0]);
+    currentType = axEntry ? axEntry[0] : AXES[0].id;
+
+    renderResult();
+});
 </script>
 </body>
 </html>
