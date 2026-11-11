@@ -1653,7 +1653,6 @@ async function unlockReport() {
 function buildShareText() {
     const t = TYPES[currentTypeCode];
     const fig = t.figure.replace('代表人物：', '');
-    const url = 'https://groovepath.leeyoucheng.com/quiz';
     const scores = AXES.map(a => `${a.sub} ${a.subEn}：${currentScores[a.id]}%`).join('\n');
     const body = [
         '',
@@ -1665,8 +1664,6 @@ function buildShareText() {
         scores,
         '',
         '說出了我一個不想承認的部分。你也來測，我想知道你是哪個 →',
-        '',
-        url,
     ].join('\n');
 
     const hooks = [
