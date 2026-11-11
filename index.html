@@ -1548,14 +1548,49 @@ function showResults() {
     }, 100);
 }
 
-function unlockReport() {
+async function unlockReport() {
     const email = document.getElementById('email-input').value.trim();
+    const inp = document.getElementById('email-input');
+    const btn = document.querySelector('#gate-wrap .btn-full');
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        const inp = document.getElementById('email-input');
         inp.style.borderColor = '#FF6080';
         inp.placeholder = '請輸入有效的 Email';
         return;
     }
+
+    // Show loading state
+    btn.textContent = '傳送中...';
+    btn.disabled = true;
+    inp.disabled = true;
+
+    const t = TYPES[currentTypeCode];
+
+    try {
+        const res = await fetch('https://services.leadconnectorhq.com/contacts/', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer pit-46dd853d-5bdb-4748-b139-67fdea9a22d2',
+                'Content-Type': 'application/json',
+                'Version': '2021-07-28'
+            },
+            body: JSON.stringify({
+                locationId: 'jSTry772I6DUxY25TdVy',
+                email: email,
+                tags: ['rda-quiz-completed', 'rda-quiz-' + currentTypeCode.toLowerCase()],
+                customFields: [
+                    { key: 'contact.rda_quiz_type',      field_value: currentTypeCode },
+                    { key: 'contact.rda_quiz_type_name', field_value: t.name },
+                    { key: 'contact.rda_quiz_tagline',   field_value: t.tagline }
+                ]
+            })
+        });
+
+        // Unlock regardless of API result (avoid blocking UX on CORS issues)
+    } catch(e) {
+        // Silent fail — still unlock
+    }
+
     localStorage.setItem('gp_email', email);
     localStorage.setItem('gp_type', currentType);
     document.getElementById('gate-wrap').style.display = 'none';
