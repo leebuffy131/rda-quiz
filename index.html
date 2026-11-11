@@ -47,7 +47,7 @@
             background-image: var(--page-bg, url('P2_theme_stage_background.png'));
             background-size: cover;
             background-position: center bottom;
-            opacity: 0.2;
+            opacity: var(--bg-opacity, 0.2);
             z-index: -1;
             transition: opacity 0.3s ease;
         }
@@ -1429,7 +1429,7 @@ function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     window.scrollTo(0, 0);
-    if (id === 's-intro') setBg('intro');
+    if (id === 's-intro') { setBg('intro'); document.documentElement.style.setProperty('--bg-opacity', '0.2'); }
 }
 
 
@@ -1465,6 +1465,7 @@ function showResults() {
 
 function renderResult() {
     setBg(currentTypeCode);
+    document.documentElement.style.setProperty('--bg-opacity', '0.4');
 
     const t = TYPES[currentTypeCode] || TYPES[Object.keys(TYPES)[0]];
 
@@ -1651,7 +1652,7 @@ async function unlockReport() {
 function buildShareText() {
     const t = TYPES[currentTypeCode];
     const fig = t.figure.replace('代表人物：', '');
-    const url = window.location.href;
+    const url = 'https://groovepath.leeyoucheng.com/quiz';
     const scores = AXES.map(a => `${a.sub} ${a.subEn}：${currentScores[a.id]}%`).join('\n');
     const body = [
         '',
