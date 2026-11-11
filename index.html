@@ -1688,22 +1688,31 @@ function buildShareText() {
 
 async function inviteFriend(btn) {
     const text = buildShareText();
-    if (navigator.share) {
-        try {
-            await navigator.share({ text });
-            return;
-        } catch(e) { /* 取消或不支援，改用複製 */ }
-    }
+    const shareUrl = 'https://groovepath.leeyoucheng.com/quiz';
+    const shareData = { title: '【GroovePath 舞者人格評估】', text, url: shareUrl };
+
+    // Try native Web Share API (works on mobile if page has allow="web-share")
+    const tryShare = async (nav) => {
+        if (nav && nav.share) {
+            try { await nav.share(shareData); return true; } catch(e) {}
+        }
+        return false;
+    };
+
+    // Try own window first, then parent (in case parent has permission)
+    if (await tryShare(navigator)) return;
+    try { if (window.parent !== window && await tryShare(window.parent.navigator)) return; } catch(e) {}
+
+    // Fallback: copy to clipboard
+    const copyText = text + '\n' + shareUrl;
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
+        navigator.clipboard.writeText(copyText).then(() => {
             const orig = btn.textContent;
             btn.textContent = '已複製！去貼給朋友 ✓';
             setTimeout(() => btn.textContent = orig, 2500);
-        }).catch(() => {
-            prompt('複製以下文字，貼給你的朋友：', text);
-        });
+        }).catch(() => { prompt('複製以下文字，貼給你的朋友：', copyText); });
     } else {
-        prompt('複製以下文字，貼給你的朋友：', text);
+        prompt('複製以下文字，貼給你的朋友：', copyText);
     }
 }
 
