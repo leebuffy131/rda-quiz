@@ -965,6 +965,11 @@ const BG = {
     es:     "url('Radiant_Life_Blueprint.png')",
     pa:     "url('P12_film_production_background.png')",
     result: "url('Jungian_Heros_Journey_Blueprint.png')",
+    CG: "url('bg_CG.png')", CW: "url('bg_CW.png')", CE: "url('bg_CE.png')", CP: "url('bg_CP.png')",
+    GC: "url('bg_GC.png')", GW: "url('bg_GW.png')", GE: "url('bg_GE.png')", GP: "url('bg_GP.png')",
+    WC: "url('bg_WC.png')", WG: "url('bg_WG.png')", WE: "url('bg_WE.png')", WP: "url('bg_WP.png')",
+    EC: "url('bg_EC.png')", EG: "url('bg_EG.png')", EW: "url('bg_EW.png')", EP: "url('bg_EP.png')",
+    PC: "url('bg_PC.png')", PG: "url('bg_PG.png')", PW: "url('bg_PW.png')", PE: "url('bg_PE.png')",
 };
 
 function setBg(key) {
@@ -1456,6 +1461,7 @@ function showResults() {
     currentType = pid;
     currentTypeCode = AXIS_LETTER[pid] + AXIS_LETTER[sid];
     currentQuality = quality;
+    setBg(currentTypeCode);
 
     const t = TYPES[currentTypeCode] || TYPES[Object.keys(TYPES)[0]];
 
