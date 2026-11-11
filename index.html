@@ -1602,27 +1602,34 @@ async function unlockReport() {
 
     const t = TYPES[currentTypeCode];
 
+    const GHL_TOKEN = 'pit-46dd853d-5bdb-4748-b139-67fdea9a22d2';
+    const GHL_LOC   = 'jSTry772I6DUxY25TdVy';
+    const payload = {
+        tags: ['rda-quiz-completed', 'rda-quiz-' + currentTypeCode.toLowerCase()],
+        customFields: [
+            { key: 'contact.rda_quiz_type',      field_value: currentTypeCode },
+            { key: 'contact.rda_quiz_type_name', field_value: t.name },
+            { key: 'contact.rda_quiz_tagline',   field_value: t.tagline }
+        ]
+    };
+
     try {
+        // Try to create first
         const res = await fetch('https://services.leadconnectorhq.com/contacts/', {
             method: 'POST',
-            headers: {
-                'Authorization': 'Bearer pit-46dd853d-5bdb-4748-b139-67fdea9a22d2',
-                'Content-Type': 'application/json',
-                'Version': '2021-07-28'
-            },
-            body: JSON.stringify({
-                locationId: 'jSTry772I6DUxY25TdVy',
-                email: email,
-                tags: ['rda-quiz-completed', 'rda-quiz-' + currentTypeCode.toLowerCase()],
-                customFields: [
-                    { key: 'contact.rda_quiz_type',      field_value: currentTypeCode },
-                    { key: 'contact.rda_quiz_type_name', field_value: t.name },
-                    { key: 'contact.rda_quiz_tagline',   field_value: t.tagline }
-                ]
-            })
+            headers: { 'Authorization': 'Bearer ' + GHL_TOKEN, 'Content-Type': 'application/json', 'Version': '2021-07-28' },
+            body: JSON.stringify({ locationId: GHL_LOC, email: email, ...payload })
         });
+        const data = await res.json();
 
-        // Unlock regardless of API result (avoid blocking UX on CORS issues)
+        // If duplicate, update the existing contact
+        if (data.meta && data.meta.contactId) {
+            await fetch('https://services.leadconnectorhq.com/contacts/' + data.meta.contactId, {
+                method: 'PUT',
+                headers: { 'Authorization': 'Bearer ' + GHL_TOKEN, 'Content-Type': 'application/json', 'Version': '2021-07-28' },
+                body: JSON.stringify(payload)
+            });
+        }
     } catch(e) {
         // Silent fail — still unlock
     }
