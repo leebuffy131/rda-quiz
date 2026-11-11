@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GroovePath｜Dancer Identity System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:      #07090F;
+            --bg2:     #0B0E1A;
+            --card:    #0D1120;
+            --border:  #18223A;
+            --border2: #222E4A;
+            --text:    #DDE3F0;
+            --dim:     #4E5E7E;
+            --dim2:    #2E3A54;
+            --accent:  #C9A96E;
+            --accent2: rgba(201,169,110,0.12);
+            --ct:  #FF6080;
+            --gb:  #3DD4C0;
+            --wz:  #A880FF;
+            --es:  #FFB830;
+            --pa:  #3DDC97;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Space Grotesk', 'Noto Sans TC', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 56px 0 120px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: var(--page-bg, url('P2_theme_stage_background.png'));
+            background-size: cover;
+            background-position: center bottom;
+            opacity: 0.2;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        /* grain overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .container { width: 100%; max-width: 660px; padding: 0 24px; }
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* ── top accent line ── */
+        .top-line {
+            width: 40px; height: 2px;
+            background: var(--accent);
+            margin-bottom: 32px;
+            opacity: 0.8;
+        }
+
+        /* ── WORDMARK ── */
+        .wordmark {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 6px;
+            color: var(--text);
+            text-transform: uppercase;
+            margin-bottom: 48px;
+        }
+        .wordmark span { color: var(--accent); opacity: 0.9; }
+
+        /* ── INTRO ── */
+        .intro-en {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            font-weight: 300;
+            letter-spacing: 5px;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            opacity: 0.85;
+        }
+
+        .intro-title {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 46px;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 6px;
+            letter-spacing: -1.5px;
+        }
+
+        .intro-title-en {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            color: var(--text);
+            text-transform: uppercase;
+            margin-bottom: 32px;
+        }
+
+        .intro-rule {
+            width: 100%; height: 1px;
+            background: linear-gradient(to right, var(--border2), transparent);
+            margin-bottom: 32px;
+        }
+
+        .intro-desc {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 15px;
+            line-height: 1.9;
+            color: var(--dim);
+            margin-bottom: 48px;
+            font-weight: 300;
+        }
+
+        /* ── AXIS LIST ── */
+        .axes-list { margin-bottom: 52px; }
+
+        .axis-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: default;
+        }
+        .axis-row:first-child { border-top: 1px solid var(--border); }
+
+        .axis-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent);
+            letter-spacing: 1px;
+            width: 24px;
+            flex-shrink: 0;
+        }
+
+        .axis-bar {
+            width: 3px;
+            height: 32px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .axis-en {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .axis-zh {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 11px;
+            font-weight: 300;
+            color: var(--dim);
+            margin-top: 2px;
+            letter-spacing: 1px;
+        }
+
+        /* ── BUTTON ── */
+        .btn {
+            display: inline-block;
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 16px 40px;
+            border-radius: 2px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #D4B87E;
+            box-shadow: 0 0 32px rgba(201,169,110,0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--dim);
+            letter-spacing: 1px;
+        }
+        .btn-ghost:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: none;
+            transform: none;
+        }
+
+        .meta-note {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            color: var(--text);
+            letter-spacing: 1px;
+            margin-top: 16px;
+        }
+        .meta-sub {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 15px;
+            color: var(--dim);
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+
+        /* ── PROGRESS ── */
+        .prog-wrap { margin-bottom: 44px; }
+
+        .prog-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .prog-axis-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .prog-counter {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: var(--text);
+        }
+
+        .prog-bar {
+            background: var(--border);
+            height: 2px;
+            overflow: hidden;
+        }
+
+        .prog-fill {
+            background: var(--accent);
+            height: 100%;
+            transition: width 0.4s ease;
+        }
+
+        /* ── TYPE PREVIEW (intro) ── */
+        .type-preview {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 32px 0 40px;
+        }
+        .tp-item {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: .06em;
+            border: 1px solid currentColor;
+            padding: 4px 10px;
+            border-radius: 2px;
+            opacity: 0.75;
+        }
+
+        /* ── SINGLE QUESTION CARD ── */
+        .q-card {
+            padding: 0 0 32px;
+            min-height: 220px;
+        }
+        .nav-quote {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 15px;
+            color: var(--text);
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            line-height: 1.7;
+            margin-bottom: 16px;
+            padding-left: 10px;
+            border-left: 1px solid var(--accent);
+        }
+        .nav-quote-src {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 12px;
+            color: var(--text);
+            letter-spacing: 1px;
+            margin-top: 3px;
+        }
+
+        /* ── QUESTIONS ── */
+        .sec-axis-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--dim);
+            margin-bottom: 8px;
+        }
+
+        .sec-title-zh {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            margin-bottom: 32px;
+        }
+
+        .q-item {
+            padding: 22px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .q-item:first-of-type { border-top: 1px solid var(--border); }
+
+        .q-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            color: var(--dim);
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .q-text {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 20px;
+            line-height: 1.7;
+            color: var(--text);
+            margin-bottom: 18px;
+            font-weight: 400;
+        }
+
+        .likert { display: flex; gap: 6px; }
+
+        .l-btn {
+            flex: 1;
+            height: 50px;
+            border: 1px solid var(--border2);
+            background: transparent;
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.12s;
+            letter-spacing: 0.5px;
+        }
+
+        .l-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .l-btn.on { color: #000; border-radius: 2px; }
+
+        .likert-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            color: var(--text);
+            margin-top: 8px;
+            font-family: 'Noto Sans TC', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 44px;
+        }
+
+        .btn-back {
+            background: none;
+            border: none;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: var(--text);
+            cursor: pointer;
+            text-transform: uppercase;
+            padding: 8px 0;
+        }
+        .btn-back:hover { color: var(--text); }
+
+        /* ── RESULT ── */
+        .r-wordmark {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            letter-spacing: 5px;
+            color: var(--text);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .r-badge {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 5px 14px;
+            border-radius: 2px;
+            display: inline-block;
+            margin-bottom: 28px;
+        }
+
+        .r-name-zh {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 56px;
+            font-weight: 900;
+            line-height: 1.0;
+            letter-spacing: -2px;
+            margin-bottom: 6px;
+        }
+
+        .r-name-en {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 300;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .r-typecode {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0 4px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .tc-hint {
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            letter-spacing: .08em;
+            color: var(--dim);
+            margin-top: 4px;
+        }
+        .tc-main {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.22em;
+        }
+        .tc-sep { color: #3A4A6A; font-size: 20px; font-weight: 300; }
+        .tc-locked {
+            font-size: 13px;
+            color: #3A4A6A;
+            border: 1px solid #2A3A5A;
+            border-radius: 3px;
+            padding: 3px 10px;
+            letter-spacing: 0.15em;
+            cursor: default;
+        }
+
+        .r-tagline {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 22px;
+            color: var(--text);
+            font-weight: 300;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .r-figure {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 14px;
+            letter-spacing: 1px;
+            color: var(--text);
+            margin-bottom: 32px;
+        }
+
+        .r-rule {
+            width: 100%; height: 1px;
+            background: linear-gradient(to right, var(--border2) 30%, transparent);
+            margin-bottom: 44px;
+        }
+
+        /* Chart */
+        .chart-wrap {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 48px 32px;
+            margin-bottom: 48px;
+            height: 420px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chart-wrap canvas { max-width: 100%; }
+
+        /* Report sections */
+        .report-sec { margin-bottom: 44px; }
+
+        .sec-label {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .sec-label-num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 2px;
+        }
+
+        .sec-label-rule { flex: 1; height: 1px; background: var(--border); }
+
+        .sec-label-en {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--dim);
+        }
+
+        .sec-title-main {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.3px;
+        }
+
+        .sec-body {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 19px;
+            line-height: 1.95;
+            color: var(--text);
+            font-weight: 300;
+        }
+
+        /* Email Gate */
+        .gate-wrap { position: relative; margin-bottom: 48px; }
+
+        .gate-blur {
+            filter: blur(8px);
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.35;
+        }
+
+        .gate-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom, transparent 0%, var(--bg) 55%);
+        }
+
+        .gate-card {
+            background: var(--card);
+            border: 1px solid var(--border2);
+            border-radius: 4px;
+            padding: 36px 32px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 60px rgba(201,169,110,0.05);
+        }
+
+        .gate-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .gate-title {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .gate-desc {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 13px;
+            color: var(--dim);
+            line-height: 1.8;
+            margin-bottom: 24px;
+            font-weight: 300;
+        }
+
+        .gate-items { text-align: left; margin-bottom: 28px; }
+
+        .gate-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 13px;
+            color: #8899BB;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .gate-tick {
+            width: 16px; height: 16px;
+            border: 1px solid var(--border2);
+            border-radius: 2px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .gate-tick-inner {
+            width: 6px; height: 6px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+
+        .email-input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border2);
+            border-radius: 2px;
+            padding: 14px 16px;
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 14px;
+            margin-bottom: 12px;
+            outline: none;
+            transition: border-color 0.15s;
+            letter-spacing: 0.5px;
+        }
+
+        .email-input:focus { border-color: var(--accent); }
+        .email-input::placeholder { color: var(--dim2); }
+
+        .btn-full { width: 100%; text-align: center; }
+
+        .gate-note {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            color: var(--dim2);
+            margin-top: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Footer */
+        .site-footer {
+            margin-top: 60px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .footer-logo-wrap {
+            display: inline-block;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+        }
+
+        .footer-logo-wrap img {
+            height: 48px;
+            width: auto;
+            display: block;
+        }
+
+        .footer-disclaimer {
+            font-size: 11px;
+            color: var(--dim);
+            line-height: 1.8;
+            max-width: 480px;
+            margin: 0 auto 12px;
+        }
+
+        .footer-disclaimer a {
+            color: var(--dim);
+            text-decoration: underline;
+        }
+
+        .footer-copy {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--dim2);
+            text-transform: uppercase;
+        }
+
+        /* Unlocked */
+        .unlocked-content { display: none; }
+        .unlocked-content.show {
+            display: block;
+            animation: fadeUp 0.6s ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scores */
+        .scores-label {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text);
+            margin-bottom: 20px;
+        }
+
+        .scores-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 48px;
+        }
+
+        .score-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 18px;
+        }
+
+        .score-zh {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 2px;
+            letter-spacing: 0.5px;
+        }
+
+        .score-en {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            color: var(--dim);
+            margin-bottom: 14px;
+        }
+
+        .score-bar { background: var(--border); height: 3px; overflow: hidden; border-radius: 2px; }
+        .score-bar-fill { height: 100%; border-radius: 2px; }
+
+        .score-val {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            text-align: right;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Share */
+        .share-wrap {
+            text-align: center;
+            padding: 40px 0 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .share-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--dim);
+            margin-bottom: 24px;
+        }
+
+        .share-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+        /* Divider */
+        .divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+        @media (max-width: 480px) {
+            .intro-title { font-size: 34px; }
+            .r-name-zh { font-size: 42px; }
+            .scores-grid { grid-template-columns: 1fr; }
+            .gate-card { padding: 24px 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- ══ INTRO ══ -->
+    <div class="screen active" id="s-intro">
+        <div class="top-line"></div>
+        <div class="wordmark">GROOVE<span>PATH</span> &nbsp;·&nbsp; Dancer Identity System</div>
+
+        <div class="intro-en">Discover / 발견하다</div>
+        <h1 class="intro-title">發現你的<br>舞者人格</h1>
+        <div class="intro-title-en">YOUR DANCER IDENTITY</div>
+        <div class="intro-rule"></div>
+        <button class="btn" onclick="startQuiz()">START →</button>
+        <div class="meta-note">1 分鐘看出你的律動靈魂是誰</div>
+        <div class="meta-sub">找出你天生的舞動強項——以及那個你最不想被人看見的部分</div>
+    </div>
+
+    <!-- ══ QUIZ ══ -->
+    <div class="screen" id="s-quiz">
+        <div class="prog-wrap">
+            <div class="prog-top">
+                <span class="prog-axis-name" id="prog-axis"></span>
+                <span class="prog-counter" id="prog-counter">1 / 20</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+        </div>
+
+        <div id="quiz-body"></div>
+
+        <div class="nav-quote" id="nav-quote"></div>
+
+        <div class="nav">
+            <button class="btn-back" id="btn-back" onclick="prevQ()">← Back</button>
+            <button class="btn" id="btn-next" onclick="nextQ()">Next →</button>
+        </div>
+    </div>
+
+    <!-- ══ RESULT ══ -->
+    <div class="screen" id="s-result">
+        <div class="top-line"></div>
+        <div class="r-wordmark">GroovePath · Dancer Identity Report</div>
+
+        <div id="r-badge" class="r-badge"></div>
+        <div id="r-name-zh" class="r-name-zh"></div>
+        <div id="r-name-en" class="r-name-en"></div>
+        <div id="r-typecode" class="r-typecode"></div>
+        <div id="r-tagline" class="r-tagline"></div>
+        <div id="r-figure" class="r-figure"></div>
+        <div class="r-rule"></div>
+
+        <div class="chart-wrap"><canvas id="radarChart"></canvas></div>
+
+        <!-- Section 01 — FREE -->
+        <div class="report-sec">
+            <div class="sec-label">
+                <span class="sec-label-num">01</span>
+                <div class="sec-label-rule"></div>
+                <span class="sec-label-en">Your True Nature</span>
+            </div>
+            <div class="sec-title-main" id="s1-title"></div>
+            <div class="sec-body" id="s1-body"></div>
+        </div>
+
+        <!-- GATE -->
+        <div class="gate-wrap" id="gate-wrap">
+            <div class="gate-blur">
+                <div class="report-sec">
+                    <div class="sec-label"><span class="sec-label-num">02</span><div class="sec-label-rule"></div><span class="sec-label-en">The Hidden Side</span></div>
+                    <div class="sec-title-main">你最不想被人看見的那一面</div>
+                    <div class="sec-body">這是大多數人練了多年都不敢承認的部分。你在台上的那個瞬間，觀眾感受到的，往往不是你以為的那個樣子。有時候是緊，有時候是空，有時候是「在努力」這件事本身被看見了。那個中間的距離，才是你真正需要面對的東西。</div>
+                </div>
+                <div class="report-sec">
+                    <div class="sec-label"><span class="sec-label-num">03</span><div class="sec-label-rule"></div><span class="sec-label-en">Your Weapon</span></div>
+                    <div class="sec-title-main">你天生的武器</div>
+                    <div class="sec-body">你有一個大多數人練幾年都拿不到的東西。它不是技術，不是努力，是你本來就帶著來的。問題不是你沒有，而是你還沒有意識到它有多值錢。</div>
+                </div>
+            </div>
+            <div class="gate-overlay">
+                <div class="gate-card">
+                    <div class="gate-label">Unlock Full Report</div>
+                    <div class="gate-title">解鎖完整舞者人格報告</div>
+                    <div class="gate-desc">輸入 Email，免費取得完整分析</div>
+                    <div class="gate-items">
+                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>你最不想被人看見的那一面</span></div>
+                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>你天生的武器</span></div>
+                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>為什麼你一直卡在這裡</span></div>
+                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>五軸評分明細</span></div>
+                    </div>
+                    <input class="email-input" id="email-input" type="email" placeholder="your@email.com">
+                    <button class="btn btn-full" onclick="unlockReport()">解鎖完整報告 →</button>
+                    <p style="font-size:11px;color:#888;text-align:center;margin-top:12px;">點擊送出即表示您同意本站<a href="https://leeyoucheng.com/privacy-policy-2/" target="_blank" style="color:#888;text-decoration:underline;">隱私權政策</a> 及 <a href="https://leeyoucheng.com/terms-conditions/" target="_blank" style="color:#888;text-decoration:underline;">使用者條款</a> </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- UNLOCKED -->
+        <div class="unlocked-content" id="unlocked">
+
+            <div class="report-sec">
+                <div class="sec-label"><span class="sec-label-num">02</span><div class="sec-label-rule"></div><span class="sec-label-en">The Hidden Side</span></div>
+                <div class="sec-title-main" id="s2-title"></div>
+                <div class="sec-body" id="s2-body"></div>
+            </div>
+
+            <div class="report-sec">
+                <div class="sec-label"><span class="sec-label-num">03</span><div class="sec-label-rule"></div><span class="sec-label-en">Your Weapon</span></div>
+                <div class="sec-title-main" id="s3-title"></div>
+                <div class="sec-body" id="s3-body"></div>
+            </div>
+
+            <div class="report-sec">
+                <div class="sec-label"><span class="sec-label-num">04</span><div class="sec-label-rule"></div><span class="sec-label-en">Why You're Stuck</span></div>
+                <div class="sec-title-main" id="s4-title"></div>
+                <div class="sec-body" id="s4-body"></div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="scores-label">Five-Axis Breakdown · 五軸評分明細</div>
+            <div class="scores-grid" id="scores-grid"></div>
+
+            <div class="share-wrap">
+                <div class="share-label">Share Your Dancer Identity</div>
+                <div class="share-row">
+                    <button class="btn" onclick="inviteFriend(this)">不能只有我知道，看看死黨是哪一型 →</button>
+                    <button class="btn btn-ghost" onclick="restartQuiz()">重新評估</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+        <footer class="site-footer">
+            <div class="footer-logo-wrap">
+                <img src="groovepath-logo.png" alt="GroovePath">
+            </div>
+            <div class="footer-disclaimer">
+                本評估工具為自我探索之參考依據，不構成任何學術診斷、職業建議或能力認證。測評結果基於使用者主觀填答，僅代表當下的自我認知狀態。GroovePath 保留對評估內容之最終解釋權。
+            </div>
+            <div class="footer-copy">© 2026 GroovePath · All rights reserved</div>
+            <p style="font-size:11px;color:#555;text-align:center;margin-top:10px;">點擊送出即表示您同意本站<a href="https://leeyoucheng.com/privacy-policy-2/" target="_blank" style="color:#555;text-decoration:underline;">隱私權政策</a> 及 <a href="https://leeyoucheng.com/terms-conditions/" target="_blank" style="color:#555;text-decoration:underline;">使用者條款</a></p>
+        </footer>
+
+</div>
+<script>
+const BG = {
+    intro:  "url('P2_theme_stage_background.png')",
+    ct:     "url('P14_audience_1_dark.png')",
+    gb:     "url('P7_door_of_light_background.png')",
+    wz:     "url('P15_audience_2_gray.png')",
+    es:     "url('Radiant_Life_Blueprint.png')",
+    pa:     "url('P12_film_production_background.png')",
+    result: "url('Jungian_Heros_Journey_Blueprint.png')",
+};
+
+function setBg(key) {
+    document.documentElement.style.setProperty('--page-bg', BG[key] || BG.intro);
+}
+
+const AXES = [
+    { id:'ct', name:'CT Hunter', sub:'身體地圖', subEn:'Body Map', color:'#FF6080',
+      qs:[
+        '學新動作時，我能快速找到身體對應的感覺',
+        '我能清楚感受到身體每個部位在動作中的位置',
+        '我可以獨立控制身體的不同部位（例如手臂與軀幹分開動）',
+        '我知道自己哪些部位比較緊繃或不靈活',
+        '在鏡子前，我能精確複製老師的動作細節',
+      ]},
+    { id:'gb', name:'Gentle Butcher', sub:'動力來源', subEn:'Force Origin', color:'#3DD4C0',
+      qs:[
+        '我的動作有清晰的「起點」和「收點」，不是做完了就算',
+        '我能在同一個動作中展現力量變化（有強有弱的對比）',
+        '我的快速動作感覺俐落，而非倉促或失控',
+        '我能控制動作的「重量感」——有時輕盈，有時沉重',
+        '觀看自己的影片，可以明顯感受到動作有不同的質感層次',
+      ]},
+    { id:'wz', name:'Wormhole Zone', sub:'空間重心', subEn:'Spatial Gravity', color:'#A880FF',
+      qs:[
+        '我清楚知道自己在空間中所處的位置',
+        '我能在移動過程中保持穩定的重心，不會不知所措',
+        '我在低位（蹲、趴）和高位（跳、站）之間的轉換流暢自然',
+        '我能感受到自己的動作在空間中「佔據」多少份量',
+        '在舞台或教室的不同位置，我都感覺自在而非失去方向感',
+      ]},
+    { id:'es', name:'Emoticon Sharpshooter', sub:'表達感染力', subEn:'Emotional Resonance', color:'#FFB830',
+      qs:[
+        '看我跳舞的人能感受到我想傳達的情緒，而不只是看到動作',
+        '我的臉部表情配合動作自然呈現，不是刻意擠出來的',
+        '我能跟著音樂的情緒調整自己的表達方式與強度',
+        '跳舞時，我能沉浸在動作中，不擔心別人怎麼看我',
+        '表演結束後，觀眾會有所感受或留下印象，而不只是「有在跳」',
+      ]},
+    { id:'pa', name:'Photography Arsenal', sub:'鏡頭臨在感', subEn:'Lens Presence', color:'#3DDC97',
+      qs:[
+        '在鏡頭前，我的動作不會變得僵硬或縮小',
+        '我知道怎麼讓動作在影片中看起來清楚有力',
+        '我能感受到攝影機的位置，並自然調整面向',
+        '看自己的錄影時，我能客觀分析，而不只是感到尷尬不自在',
+        '有人錄影的情況下，我能保持和平常一樣的表演狀態',
+      ]},
+];
+
+const TYPES = {
+    CG: {
+        name:'精準動力師', nameEn:'THE KINETIC ANALYST', badge:'CT Hunter × Gentle Butcher', color:'#FF6080',
+        figure:'代表人物：Mikhail Baryshnikov',
+        tagline:'你的每一個發力都有理由',
+        s1t:'你真正的樣子',
+        s1:'你是那種不只知道「怎麼動」，還知道「為什麼要這樣動」的人。你的動作裡有清晰的力學邏輯——哪個關節先啟動、力量從哪裡傳導、收點在哪裡。這讓你看起來不只是在跳，更像是在執行一套精密的物理公式。而且你的動作有質感——不是隨便動一下，每個動作都有它的重量和密度。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最怕「沒有準備好就上台」。你不喜歡在技術還沒到位的情況下被人看見，所以你會一直準備、一直練。問題是，「準備好」這個門檻對你來說永遠在移動。你把動作研究到很透，但在台上，那個研究感有時候反而讓你看起來像在操作，而不是在活著。觀眾分得清楚一個人在「做」動作，還是在「是」那個動作。',
+        s3t:'你天生的武器',
+        s3:'你是天生的動作翻譯師。你可以看一段複雜的編舞，立刻拆解出力學路徑，然後告訴別人「這裡的感覺是這樣到位的」。在教學、動作指導、影片分析上，這個能力是稀缺資源。你不只跳得好，你說得出來。在一個大家都跳但沒人能說清楚的世界裡，你的價值是雙倍的。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有把「理解力」變成「信任感」。你研究動作，但還沒學會信任你研究過的東西。精準動力師的突破，是某一天決定：「我已經知道了，現在讓身體去做，不要腦子跟著。」那個瞬間，你的動作從精準變成流暢，從正確變成迷人。',
+    },
+    CW: {
+        name:'空間製圖師', nameEn:'THE SPATIAL CARTOGRAPHER', badge:'CT Hunter × Wormhole Zone', color:'#FF6080',
+        figure:'代表人物：William Forsythe',
+        tagline:'你在空間裡劃的線，別人看不見但感覺得到',
+        s1t:'你真正的樣子',
+        s1:'你在空間裡不是隨機移動的——你有一套隱形的座標系統。你清楚知道自己在哪裡、去哪裡，以及剩下多少空間可以用。這讓你在群舞中天然有定位感，在solo中有強烈的空間主張。你研究身體，也研究身體在空間中留下的軌跡。你的動作不只是動作，是一種對空間的聲明。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你有時候活在自己的座標系裡，忘記觀眾的存在。你在分析空間，但觀眾需要感受空間。你最不想被人看見的，是你「在想事情」的樣子——你在計算下一個位置、在校正重心、在確認軌跡，但那個計算感從外面是看得出來的。當你進入分析模式，你的眼神會飄走，身體會縮小一點，觀眾感覺你「在別的地方」。',
+        s3t:'你天生的武器',
+        s3:'你是天生的空間設計師。在需要隊形、動線、空間敘事的場合——群舞、MV拍攝、舞台設計——你的直覺是頂尖的。你不需要紙筆，你的身體就是量尺。這個能力在娛樂工業裡非常稀缺：大多數舞者會跳，但沒有人知道怎麼用整個舞台說話，你卻天然懂得。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你把空間當成「問題要解決」，而不是「場域要感受」。空間製圖師的突破，是把分析的眼睛暫時關掉，讓身體直接回應那個空間給你的感覺。當你不再試圖「設計」而是「居住」在空間裡，你的動作會從有意思變成有生命。',
+    },
+    CE: {
+        name:'冷靜火山', nameEn:'THE DORMANT VOLCANO', badge:'CT Hunter × Emoticon Sharpshooter', color:'#FF6080',
+        figure:'代表人物：Martha Graham',
+        tagline:'你的情緒不是爆發出來的，是滲透出來的',
+        s1t:'你真正的樣子',
+        s1:'你不是那種你一上台大家就尖叫的人。你是那種讓人慢慢意識到「這個人不一樣」的人。你有強烈的內在情緒，但你不直接爆發——你讓它通過精準的動作細節滲透出來。那個收緊的指尖、那個延遲一秒的呼吸、那個完全不動的瞬間——這些都是你的情緒在說話，只是說得很慢、很深、很準。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你在努力「放開」的樣子。你有強烈的情緒，但你的身體習慣把它包裹在技術裡——因為技術是安全的，情緒是危險的。當你試圖「更有感染力」的時候，反而顯得刻意。你知道那個感覺——本來很自然，然後你意識到有人在看，然後它就消失了。那個消失，就是你的關卡。',
+        s3t:'你天生的武器',
+        s3:'你是稀有的「內斂型感染力」持有者。在一個大家都在比誰更誇張、誰更爆發的舞台上，你是那個讓所有人安靜下來的人。你的動作有重量，有歷史感，有一種「這個人經歷過什麼」的厚度。這種質感是練不出來的——它是你這個人的沉澱。在戲劇、劇場、narrative舞蹈裡，你是不可取代的。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有允許自己「不精準地感受」。冷靜火山的突破，不是學習更多表達技巧，而是給自己一個「今天可以醜、可以失控、可以不知道下一秒會發生什麼」的排練。當你停止管理情緒，開始讓情緒管理你的動作，整個人就活了。',
+    },
+    CP: {
+        name:'精準鏡像', nameEn:'THE PERFECT MIRROR', badge:'CT Hunter × Photography Arsenal', color:'#FF6080',
+        figure:'代表人物：Janet Jackson',
+        tagline:'你不只是在跳舞，你是在製造畫面',
+        s1t:'你真正的樣子',
+        s1:'你有一個稀有的能力：你同時活在動作裡，也活在鏡頭裡。你在跳的時候，你知道自己的樣子——不是自戀，是意識。你清楚哪個角度好看、哪個動作需要放大、哪個細節鏡頭會捕捉到。這讓你在拍攝場合表現得非常好——第一take就過，不需要導演解釋，你本能地給出他想要的東西。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你在鏡頭外「找不到目標」的樣子。鏡頭給了你一個框，你知道怎麼在框裡表現。但在live現場——特別是觀眾從四面八方看你的時候——你不確定要「給誰看」。那種不確定讓你的動作有點分散，你在掃視觀眾，在試圖找到那個「鏡頭」，但現場沒有鏡頭。',
+        s3t:'你天生的武器',
+        s3:'你是內容創作時代的完美武器。你的動作天生適合被記錄——無論是MV、Instagram Reel、舞台直播。你不需要花時間學「怎麼在鏡頭前自在」，你本來就自在。這意味著你的內容製作成本比別人低，你的素材直接可用，你的商業價值在鏡頭經濟時代是有乘數效應的。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你把live現場當成拍攝現場，但它不是。精準鏡像的突破，是學會在live現場「選一個觀眾當你的鏡頭」——不是掃視所有人，是找到一個人，給他你全部，然後移動到下一個。當你把現場觀眾當成鏡頭，你的鏡頭臨在感就會自動轉化成live感染力。',
+    },
+    GC: {
+        name:'動力解碼師', nameEn:'THE FORCE DECODER', badge:'Gentle Butcher × CT Hunter', color:'#3DD4C0',
+        figure:'代表人物：Desmond Richardson',
+        tagline:'你把力量變成語言',
+        s1t:'你真正的樣子',
+        s1:'你不只有力量，你知道力量的語法。你清楚什麼時候要強、什麼時候要輕、什麼時候要讓力量懸在空中等一秒。你的動作裡有一種精密的能量管理——不是省力，是用力。每一個動作都是刻意的選擇。觀眾看你，感覺到的不只是「這個人力量大」，而是「這個人知道力量是什麼東西」。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最怕跳出來的東西「不夠乾淨」。你對自己動作的質感有很高的標準，但這個標準有時候讓你在台上多了一層濾鏡——你在批判自己的力量是否精準，而不是完全在感受那個力量。那個批判感從外面看起來是「收著」。你跳得比你展示的更好，這是你最大的浪費。',
+        s3t:'你天生的武器',
+        s3:'你是跨風格的動力橋樑。你可以把街舞的爆發力帶進當代舞，把芭蕾的力學帶進嘻哈，把任何風格的力量邏輯翻譯給另一種風格的人。這個跨界力量是極稀缺的——大多數舞者只精通一種力量語言，你是多語者。在需要融合風格的場合，你是無可取代的。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你太在意動作的「正確性」而忘記了動作的「真實性」。動力解碼師的突破，是放下「這個力量對不對」的問題，改問「這個力量是真的嗎」。技術上正確的力量和真實感受到的力量，觀眾分得出來。那個真實感，才是你下一個層次。',
+    },
+    GW: {
+        name:'重力操控者', nameEn:'THE GRAVITY BENDER', badge:'Gentle Butcher × Wormhole Zone', color:'#3DD4C0',
+        figure:'代表人物：Lil Buck',
+        tagline:'你讓地心引力變成你的共謀',
+        s1t:'你真正的樣子',
+        s1:'你有一種別人說不清楚的「重量感」——不是笨重，是有根基。你的動作像是跟地板有協議：你決定什麼時候沉下去、什麼時候彈起來、什麼時候讓重力帶著你走。這讓你的移動看起來既有力量又輕盈，因為你不是在對抗重力，你是在跟它協作。觀眾感受到的，是一種說不出來的「真實感」。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你在陌生空間「失去地基」的樣子。你的力量和空間感是連在一起的——在熟悉的地板、熟悉的空間裡，你是另一個人。但換了場地、換了地板材質，你需要更長的時間重新校正。在陌生的舞台上，觀眾有時候會發現「他跟在排練室時不一樣」——那個不一樣，就是你在找回地基的過程。',
+        s3t:'你天生的武器',
+        s3:'你是live演出的天然王者。在需要「穩定大局」的場合——群舞的錨點、開場的第一個動作、整個隊形的重心——你是讓一切穩住的那個人。你的存在讓其他人跳得更自在，因為有你在，大家知道空間是安全的。這種能量在live演出、教學示範、任何需要「讓人信服」的場合，都是隱形的權威。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你的力量和空間感還沒有「可攜帶化」。重力操控者的突破，是練習在任何地板、任何空間都能在30秒內建立起自己的地基。當你可以隨時隨地「紮根」，你的力量就從「條件性的強」變成「無條件的穩」，那才是真正的王者狀態。',
+    },
+    GE: {
+        name:'爆發詩人', nameEn:'THE EXPLOSIVE POET', badge:'Gentle Butcher × Emoticon Sharpshooter', color:'#3DD4C0',
+        figure:'代表人物：Michael Jackson',
+        tagline:'你的力量從來不只是力量',
+        s1t:'你真正的樣子',
+        s1:'你是那種讓人屏住呼吸的人。你的動作有力量，但那個力量裡面有情緒——不是「在做一個動作」，而是「在說一件事」。你的爆發不是隨機的，它背後有一個動機，哪怕說不清楚，觀眾也感覺得到。那個感覺讓人想一直看你，因為你的下一秒永遠是個謎。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你「狀態不對」的時候。你的感染力太依賴當下的能量——狀態好的時候，你無敵；狀態不對的時候，你的力量變成空殼，動作還在，但裡面的東西不見了。而且你自己最清楚那個差距，這讓你在狀態不好的時候特別焦慮，然後那個焦慮讓狀態更差。',
+        s3t:'你天生的武器',
+        s3:'你是有史以來最難被複製的那種存在。你的動作別人學得到形，但學不到那個力量背後的情緒邏輯。這意味著你的「真品感」是無法被山寨的。在社群媒體時代，這是極稀缺的資產——每個人都可以複製動作，但沒有人可以複製你的力量來自哪裡。那個來源，就是你的護城河。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有學會「在沒有感覺的時候，用動作結構撐住表達」。爆發詩人的突破，是學會演員的技術——不是每場都哭得出來，但每場都給得出去。當你把「有感覺才能跳好」變成「我可以用動作找回感覺」，你就從依賴狀態，變成創造狀態。',
+    },
+    GP: {
+        name:'視覺衝擊師', nameEn:'THE VISUAL STRIKER', badge:'Gentle Butcher × Photography Arsenal', color:'#3DD4C0',
+        figure:'代表人物：Bruno Mars',
+        tagline:'你是那種讓攝影師不敢眨眼的人',
+        s1t:'你真正的樣子',
+        s1:'你有一種天生的「可看性」——不管你在做什麼，鏡頭都找得到你。你的力量和動作質感，在螢幕上有一種特別的存在感，不是大，是清晰。你清楚怎麼讓力量在鏡頭裡不失真——有些舞者現場很強但拍出來平淡，你剛好相反，或者說，你兩樣都強。這是極少數人才有的組合。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你在「沒有觀眾」的時候失去動力的樣子。你的力量和鏡頭意識是相輔相成的——有人看你，你的能量就升起來。但在空曠的排練室裡，沒有任何人，你有時候很難找到那個爆發的理由。那個「需要被看見才能全力以赴」的傾向，是你的力量來源，也是你的脆弱點。',
+        s3t:'你天生的武器',
+        s3:'你是娛樂工業最需要的那種人：live能爆發，鏡頭也能爆發。大多數藝人只能選一個。你的商業價值是雙軌的——巡迴演唱會需要你，音樂錄影帶也需要你。在一個表演者需要在各種媒介同時存在的時代，你的「跨媒介爆發力」是頂級資產。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有把「被看見的能量」內化成「給自己的能量」。視覺衝擊師的突破，是學會在空曠排練室裡跳出和在滿場觀眾前一樣的能量——不是假裝有觀眾，而是讓那個能量真正屬於你，而不是屬於觀眾的反應。那個時候，你才是真正的全天候表演者。',
+    },
+    WC: {
+        name:'空間解剖師', nameEn:'THE SPACE ANATOMIST', badge:'Wormhole Zone × CT Hunter', color:'#A880FF',
+        figure:'代表人物：Trisha Brown',
+        tagline:'你把空間當成身體的延伸來研究',
+        s1t:'你真正的樣子',
+        s1:'你是那種會在腦子裡建立空間模型的人。你不只在空間裡移動，你在研究空間——哪裡有張力、哪裡有空缺、哪條路徑會製造什麼效果。你的身體是量尺，你的移動是實驗。你在舞台上不是在跳舞，是在進行一場空間的田野調查。而且你的發現每次都不一樣，因為每個空間都是新的問題。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你「過度研究」的樣子。你在觀察和分析空間的時候，你的身體會不自覺地縮小——你退後一步，讓觀察的眼睛先出去，然後身體才跟上。但觀眾看到的是：這個人在猶豫、在等待、在還沒決定。那個空隙，不是你的弱點，是你還沒學會把分析和行動同步的信號。',
+        s3t:'你天生的武器',
+        s3:'你是群舞和空間敘事中無可取代的核心。你是那個讓整個編舞「站起來」的人——不是因為你跳得最好，而是因為你知道每個人應該在哪裡、為什麼在那裡。在製作人、藝術總監、動作指導的角色上，你的空間直覺是千金難買的。很多人跳了幾十年都在想「為什麼這個編舞感覺怪」，你兩秒鐘就能指出問題在哪。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你把空間的「分析」和空間的「佔領」分開了。空間解剖師的突破，是讓分析和行動同時發生——不是先想好再動，而是在動的過程中分析，在分析的過程中繼續動。當你可以一邊研究一邊居住在空間裡，你的動作就從有意思變成有生命。',
+    },
+    WG: {
+        name:'重力反叛者', nameEn:'THE GRAVITY REBEL', badge:'Wormhole Zone × Gentle Butcher', color:'#A880FF',
+        figure:'代表人物：Pina Bausch',
+        tagline:'你不遵守地板的規則',
+        s1t:'你真正的樣子',
+        s1:'你有一種別人說不清楚的「地板關係」——你不是站在地板上，你是跟地板有一段複雜的感情。你的動作裡有一種反重力的衝動，但不是往上跳，而是往地板沉，然後再起來，然後再沉，就好像你在跟地心引力爭論什麼。你的力量是有方向的，而那個方向往往是別人沒有選的那個。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你「不知道停在哪裡」的樣子。你的動作邏輯不是線性的，你不遵守「起承轉合」的傳統路徑，所以當你需要在某個固定的位置停下來、做一個固定的動作，你有時候會顯得不自然。那個「不自然」，讓一些老師覺得你「不聽話」，但那恰恰是你最獨特的地方還沒被開發的信號。',
+        s3t:'你天生的武器',
+        s3:'你是突破編舞框架的天然反叛者。在需要創新、突破、顛覆的場合——實驗性演出、新概念MV、跨界合作——你的動作邏輯比大多數人更有可能產出別人沒見過的東西。你的「不對」往往是最先到達未來的那一步。在一個大家都在複製的世界裡，你是少數真正在創造的人。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有把你的「反叛」變成「語言」。重力反叛者的突破，是把你的直覺動作翻譯成別人可以理解的結構——不是讓自己變得規矩，而是讓自己的規則變得清晰，讓合作者可以跟上你。當你有自己的動作語法，你就從「難以捉摸」變成「獨樹一格」。',
+    },
+    WE: {
+        name:'場域詩人', nameEn:'THE SPATIAL POET', badge:'Wormhole Zone × Emoticon Sharpshooter', color:'#A880FF',
+        figure:'代表人物：Isadora Duncan',
+        tagline:'你的情緒需要整個空間才裝得下',
+        s1t:'你真正的樣子',
+        s1:'你是那種會讓整個房間感覺不一樣的人——不是因為你很大聲，而是因為你的情緒有空間感。你不只在身體裡感受情緒，你讓情緒往外擴散，佔領空間。你在台上的時候，觀眾感覺到的不只是你，而是整個舞台氣氛的改變。那是一種場域效應，不是個人效應——你的存在改變了整個房間的能量密度。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你在「小空間裡」的樣子。你的能量是往外放的，當空間太小、觀眾太近、或者舞台太擠，你的感染力會不知道往哪裡放。你有時候在小場地表演反而不如在大場地——因為大場地的空間讓你的情緒有地方去，小場地會讓你感覺被壓縮。',
+        s3t:'你天生的武器',
+        s3:'你是大型演出、大型空間的天然主角。在露天舞台、大劇院、節慶演出，你的能量是有乘數效應的——空間越大，你越強。這在演出市場上是很稀缺的能力，因為大多數表演者在大空間裡會感覺「縮小了」，你卻是相反。當製作人需要「撐得住一個大場地」的表演者，你是第一個被想到的人。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有學會「在任何空間都製造自己的場域」。場域詩人的突破，是把空間的大小從你的感染力的條件，變成你的感染力的選項。當你可以在小咖啡廳創造出和大舞台一樣的場域效應，你就真正掌握了自己的力量，而不是被空間決定你。',
+    },
+    WP: {
+        name:'鏡頭地理學家', nameEn:'THE LENS GEOGRAPHER', badge:'Wormhole Zone × Photography Arsenal', color:'#A880FF',
+        figure:'代表人物：菅原小春（Koharu Sugawara）',
+        tagline:'你天生知道怎麼讓空間為你說話',
+        s1t:'你真正的樣子',
+        s1:'你是那種讓攝影師覺得「這個人天生就知道在哪裡站」的人。你在空間裡的位置永遠是對的——不是因為你想太多，而是因為你的身體和鏡頭之間有一種直覺協議。你不只知道怎麼在鏡頭前表現，你知道怎麼用空間位置來強化你在鏡頭裡的存在感。背景、前景、移動路徑——這些在你眼裡是工具，不是背景。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你在「純live現場」找不到支點的樣子。你習慣有一個「框」——鏡頭的框、舞台的框、表演區的框。當框消失了，觀眾從四面八方包圍你，你有時候不確定自己的「正面」在哪裡。那個不確定讓你在全景觀演的場合顯得稍微收著，沒有在螢幕上的你那麼有磁性。',
+        s3t:'你天生的武器',
+        s3:'你是鏡頭時代最完整的表演資產。你不只跳得好，你知道怎麼被記錄——而在這個時代，「被記錄的方式」決定了你的傳播力。你的內容天然有電影感，不需要後製魔法，你的素材本來就有質感。在社群媒體、MV製作、品牌合作上，你的鏡頭語言是直接換算成商業價值的能力。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你把「空間」和「鏡頭」分開思考，還沒有把兩者整合成一套完整的語言。鏡頭地理學家的突破，是在live現場也用「鏡頭思維」設計自己的位置——把每個觀眾的眼睛當成一個鏡頭，然後你的空間移動就有了方向感。那個時候，你在任何場合都是完整的你。',
+    },
+    EC: {
+        name:'情感解碼師', nameEn:'THE EMOTION DECODER', badge:'Emoticon Sharpshooter × CT Hunter', color:'#FFB830',
+        figure:'代表人物：Beyoncé',
+        tagline:'你的感染力是有結構的',
+        s1t:'你真正的樣子',
+        s1:'你是那種每個情緒都有清晰出口的人。你不只「有感覺」，你知道怎麼讓感覺精準落地。你的身體是一套翻譯系統——情緒進去，動作出來，而且是正確的動作，是觀眾能接收到的動作。你不需要演，你只需要感受，然後你的身體自動幫你說出來。那個精準感，讓人覺得你在跳的每一個動作都是刻意的，哪怕它完全是本能。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你「沒有情緒的日子」。你的感染力依賴真實的感受，當那個感受不在，你的動作精準度還在，但那個讓人屏住呼吸的東西不見了。你自己最清楚那個差距，所以你在狀態不好的時候會更努力——但「努力」本身在台上是看得出來的。那個努力感，就是你狀態不好時的洩漏點。',
+        s3t:'你天生的武器',
+        s3:'你是舞台表演和情感教育的雙料武器。你不只感染觀眾，你讓觀眾理解情感。在教學、演講、任何需要「讓人感受到什麼」的場合，你的精準情感表達是極稀缺的能力。很多人有情感，但說不清楚；你有情感，而且說得清楚，更厲害的是你的身體替你說。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有學會「從動作回推情感」。情感解碼師的突破，是在狀態不好的時候，不靠等待情緒到來，而是靠執行一個精準的動作，讓動作把情感帶回來。當你發現「做對的動作可以讓正確的感覺出現」，你就從情緒依賴型表演者，變成情緒製造型表演者。',
+    },
+    EG: {
+        name:'情感炸彈', nameEn:'THE EMOTION BOMB', badge:'Emoticon Sharpshooter × Gentle Butcher', color:'#FFB830',
+        figure:'代表人物：Ciara',
+        tagline:'你的感染力是有重量的',
+        s1t:'你真正的樣子',
+        s1:'你是那種讓人「感覺到」你在跳舞的人，不只是「看到」。你的情緒有物理重量——它打到觀眾身上是有衝擊感的。你的爆發不是炫技，是傾訴；你的力量不是肌肉，是動機。當你完全在狀態裡，觀眾分不清楚你是在跳舞還是在活著某一段人生。那個模糊，就是你的力量所在。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你「收著」的樣子。你有強烈的情緒和力量，但你有時候會在台上踩煞車——因為你不確定「這樣會不會太多」。那個自我審查讓你的動作打了折扣。觀眾感受到的，不是你的完整，而是一個「大概八成」的你。而你自己也知道，那個被壓住的兩成，才是你最真實的部分。',
+        s3t:'你天生的武器',
+        s3:'你是live演出的情感炸彈。當你決定不踩煞車，你有能力讓整個場館感受到你的情緒——不是通過技巧，而是通過完全的給予。在演唱會、節慶演出、任何需要「這一刻改變所有人的感覺」的場合，你是那個按下引爆鈕的人。而且你可以一次又一次地引爆，因為你的情緒是有動力學支撐的，不是空炮。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有完全相信「給太多」是可以的。情感炸彈的突破，是某一天在台上決定：「今天不踩煞車。」那一場演出可能會讓你覺得很脆弱，但那也會是你這輩子最難忘的一場演出。當你給出去的比你以為的「安全量」還要多，你才真正知道自己的上限在哪裡。',
+    },
+    EW: {
+        name:'感染磁場', nameEn:'THE MAGNETIC FIELD', badge:'Emoticon Sharpshooter × Wormhole Zone', color:'#FFB830',
+        figure:'代表人物：Alvin Ailey',
+        tagline:'你不只是感染一個人，你感染整個空間',
+        s1t:'你真正的樣子',
+        s1:'你是那種讓整個劇院空氣改變的人。你的情緒不是點對點傳遞的，它是往四面八方放射出去的。觀眾在你的感染範圍裡，不是選擇要不要被感染，他們就是被感染了。你的空間感讓你的情緒有了載體——你不是站在原地爆發，你移動，你佔領空間，然後那個空間就變成你的情緒的延伸。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你「找不到起點」的樣子。你的感染力是大規模的，但它需要一個觸發點——一段音樂、一個情境、一個記憶——才能啟動。當那個觸發點不在，你在台上有時候會顯得「在等待什麼」。那個等待感讓觀眾覺得你「還沒進入狀態」，哪怕你技術上完全準備好了。',
+        s3t:'你天生的武器',
+        s3:'你是群體性情感體驗的製造者。在需要「讓所有人同時感受到同一件事」的場合——大型演出、頒獎典禮、社會議題相關的表演——你是那個讓集體記憶發生的人。這個能力在娛樂工業裡是傳奇等級的稀缺：大多數表演者感染一部分觀眾，你感染的是整個房間的集體意識。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有學會「不需要觸發點就能啟動」。感染磁場的突破，是把外部觸發變成內部觸發——不是等音樂感動你，而是讓你的動作製造音樂要給你的感覺。當你可以自己點燃自己，你就從「需要條件的天才」變成「無條件的力量」。',
+    },
+    EP: {
+        name:'銀幕靈魂', nameEn:'THE SCREEN SOUL', badge:'Emoticon Sharpshooter × Photography Arsenal', color:'#FFB830',
+        figure:'代表人物：Jennifer Lopez',
+        tagline:'你是那種讓鏡頭替你說話的人',
+        s1t:'你真正的樣子',
+        s1:'你有一種魔法：你在鏡頭前的情緒，比在現場更強烈。不是因為你在演，而是因為鏡頭放大了你的真實。你在螢幕裡的眼神、你的呼吸、你動作裡那個一秒的猶豫——這些在現場可能沒人注意到，在鏡頭裡是所有人的焦點。你的情感是鏡頭語言的天然母語，不需要翻譯。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你在live現場「情緒找不到出口」的樣子。鏡頭是你情緒的完美容器，但live現場的情緒是往四面散開的，沒有那個聚焦感。你在live的時候，情緒的強度沒有變，但沒有鏡頭替你聚焦，觀眾感受到的強度會打折。那個折扣，讓你在live現場有時候比影片裡顯得「普通一些」。',
+        s3t:'你天生的武器',
+        s3:'你是數位時代的情感傳播者。你的情緒通過鏡頭放大之後，有穿透螢幕的能力——觀眾在手機前看你，感覺像你在直接對他說話。在社群媒體、線上課程、品牌形象影片上，這個能力直接換算成影響力和信任感。你不需要成為明星，你本來就有明星的鏡頭語言。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有學會「在live現場創造鏡頭感」。銀幕靈魂的突破，是在live現場想像每個觀眾的眼睛是一個小鏡頭，你的情緒直接對每一個鏡頭說話。當你學會在live現場創造「鏡頭親密感」，你在任何場合都是滿格狀態。',
+    },
+    PC: {
+        name:'視覺外科醫', nameEn:'THE VISUAL SURGEON', badge:'Photography Arsenal × CT Hunter', color:'#3DDC97',
+        figure:'代表人物：Madonna',
+        tagline:'你在鏡頭裡是另一個更精準的自己',
+        s1t:'你真正的樣子',
+        s1:'你有一種別人說不清楚的能力：你可以同時活在動作裡，也活在鏡頭的眼睛裡。你在拍攝的時候，你不只知道動作對不對，你知道動作在鏡頭裡是什麼感覺——那是兩件不同的事。你的身體分析能力讓你可以看見自己，然後修正，然後再看見，形成一個精準的反饋迴路，讓你的鏡頭表現每次都可以更好。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你「過度自我監控」的樣子。你在鏡頭前的精準是你的強項，但有時候這個精準讓你在拍攝現場顯得「在管理自己」而不是「在表現自己」。導演有時候覺得你「太完美但不夠真實」——因為你把所有的不完美都修掉了，但不完美裡面有時候有一個觀眾更能接受的東西。',
+        s3t:'你天生的武器',
+        s3:'你是形象工程的精密儀器。在需要建立一個清晰、一致、強烈的視覺身份的場合——品牌合作、MV主角、任何需要「每一幀都是作品」的場合——你是完美人選。你不需要後製幫你修，你本來就是修好的。在一個後製無限的時代，你的「原始素材就很好」是極稀缺的競爭優勢。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有學會「帶著不完美上鏡頭」。視覺外科醫的突破，是允許鏡頭看到你的某一個「沒有算計」的瞬間，然後發現觀眾愛的恰好是那個瞬間。當你學會把精準和真實同時帶進鏡頭，你就從「完美但距離感」變成「完美且貼近人」。',
+    },
+    PG: {
+        name:'電影動力機', nameEn:'THE CINEMATIC FORCE', badge:'Photography Arsenal × Gentle Butcher', color:'#3DDC97',
+        figure:'代表人物：Chris Brown',
+        tagline:'你的力量在鏡頭裡才真正被看見',
+        s1t:'你真正的樣子',
+        s1:'你有一種特殊的能量轉換能力：你的力量和動力質感，通過鏡頭不只沒有衰減，反而被放大了。你在螢幕裡的爆發感比現場更強烈——不是因為後製，而是因為你本能地知道什麼樣的力量鏡頭「接得住」。你的動作在鏡頭裡有一種真實的物理衝擊感，讓看的人感覺身體被震動到。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你在live現場「不確定力量要往哪裡放」的樣子。鏡頭讓你的力量有了方向（往鏡頭），但live現場四面都是觀眾，你的力量四散開來，反而感覺沒有那麼集中。你在live的時候有時候顯得「不如影片裡爆」——不是你的力量變小了，是你的力量失去了焦點。',
+        s3t:'你天生的武器',
+        s3:'你是鏡頭動力時代的稀缺物種。在需要「讓力量通過螢幕傳到觀眾身上」的場合——演唱會轉播、線上演出、音樂影片——你是那個讓製作人說「再來一次，不是因為不好，是因為太好了我想多拍幾個角度」的人。你的力量和鏡頭意識的組合，在目前的表演市場裡非常稀缺。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有把「鏡頭焦點」帶進live現場。電影動力機的突破，是在live現場選一個「主要方向」當成你的鏡頭，然後把你的力量集中往那個方向放，讓那一區的觀眾覺得你在對他們說話。當你學會在live現場製造「鏡頭焦點感」，你在任何場合都是完整的你。',
+    },
+    PW: {
+        name:'畫框建築師', nameEn:'THE FRAME ARCHITECT', badge:'Photography Arsenal × Wormhole Zone', color:'#3DDC97',
+        figure:'代表人物：Bob Fosse',
+        tagline:'你把鏡頭當空間在設計',
+        s1t:'你真正的樣子',
+        s1:'你是那種走進一個拍攝現場，五分鐘之內就知道每個角落可以用來做什麼的人。你不只在框裡表演，你在設計框——什麼時候填滿畫面，什麼時候留白，什麼時候讓背景說話，什麼時候讓前景變成主角。你的空間感讓你的鏡頭語言有一種電影導演的質量，哪怕你只是在跳舞。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你在「純即興」的場合失去方向的樣子。你最強的時候，是有一個框、有一個空間、有一個明確的視覺目標的時候。當一切都開放，沒有框、沒有攝影機、沒有特定的空間設定，你有時候會不知道從哪裡開始。那個不確定感，讓你在純即興或純street的場合顯得沒有在其他場合那麼確定。',
+        s3t:'你天生的武器',
+        s3:'你是跨媒介創作的天然協作者。在導演、攝影師、藝術指導的眼裡，你是那種「說完需求，他已經在做了」的合作者。你的空間思維讓你理解視覺語言，你的鏡頭意識讓你理解敘事節奏。在MV、電影、廣告、任何需要「舞蹈和鏡頭語言融合」的場合，你是讓整個製作品質提升一個量級的存在。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有學會「在沒有框的時候製造自己的框」。畫框建築師的突破，是練習在任何空間裡，用身體劃出一個屬於你的「隱形框」——用移動的路徑、用停留的位置、用身體的朝向——讓觀眾的眼睛自然跟著你的框走。當你可以在任何地方製造畫框，你就隨時隨地都是導演。',
+    },
+    PE: {
+        name:'鏡頭靈媒', nameEn:'THE LENS MEDIUM', badge:'Photography Arsenal × Emoticon Sharpshooter', color:'#3DDC97',
+        figure:'代表人物：Fred Astaire',
+        tagline:'你的情緒通過鏡頭放大了十倍',
+        s1t:'你真正的樣子',
+        s1:'你是那種讓鏡頭愛上你的人——不是因為你好看，而是因為你在鏡頭前的情緒有穿透性。你的感受通過鏡頭不是被稀釋，而是被放大、被聚焦，直接射進觀眾的心裡。你不需要誇張表情，不需要大動作——一個微小的眼神變化，通過鏡頭放大之後，讓觀眾感覺你在對他一個人說話。',
+        s2t:'你最不想被人看見的那一面',
+        s2:'你最不想被人看見的，是你在live現場「情緒找不到出口」的樣子。鏡頭是你情緒的完美容器，但live現場的情緒是往四面散開的，沒有那個聚焦感。你在live的時候，情緒的強度沒有變，但沒有鏡頭替你聚焦，觀眾感受到的強度會打折。那個折扣，讓你在live現場有時候比影片裡顯得「普通一些」。',
+        s3t:'你天生的武器',
+        s3:'你是情感影響力的頂級載體。在需要「讓觀眾愛上一個人」的場合——電影、廣告、任何需要「通過螢幕建立情感連結」的媒介——你的鏡頭情感滲透力是無可取代的。你不需要成為明星，你本來就有明星的鏡頭語言。在一個情感連結決定品牌忠誠度的時代，你的能力直接換算成影響力。',
+        s4t:'為什麼你一直卡在這裡',
+        s4:'因為你還沒有學會「在live現場創造鏡頭感」。鏡頭靈媒的突破，是練習「對一個人說話」而不是「對所有人說話」——在live現場選一個觀眾，讓你的情緒直接給他，就好像他是鏡頭。當你可以在live現場一次對一個人，你的情緒就重新有了出口，整個場地就變成了你的情感空間。',
+    },
+};
+
+const QUOTES = [
+    { q: '身體從不說謊。', src: '— Martha Graham' },
+    { q: '動作是靈魂說話的方式，當文字已經不夠用的時候。', src: '— Isadora Duncan' },
+    { q: 'Dance is the hidden language of the soul.', src: '— Martha Graham' },
+    { q: 'Movement never lies.', src: '— Martha Graham' },
+    { q: 'The body says what words cannot.', src: '— Martha Graham' },
+    { q: 'To watch us dance is to hear our hearts speak.', src: '— Hopi Indian saying' },
+    { q: 'Dance first. Think later. It\'s the natural order.', src: '— Samuel Beckett' },
+    { q: 'You can dance anywhere, even if only in your heart.', src: '— Bob Fosse' },
+    { q: '你移動的方式，透露了你真正是誰。' },
+    { q: '最好的動作，往往在你停止想的那一瞬間發生。' },
+    { q: '跳舞不是你做的事，是你成為的事。' },
+    { q: '重力是每個舞者最誠實的老師。' },
+    { q: '觀眾看到的，是你給自己的許可。' },
+    { q: '你的恐懼和你的天賦，往往住在同一個地方。' },
+    { q: '空間是你最私密的地圖。' },
+    { q: '力量不是肌肉，是意圖。' },
+    { q: '每一個停頓，都和每一個動作一樣重要。' },
+    { q: '鏡子裡的你，不是全部的你。' },
+    { q: '節奏是你的第二個心跳。' },
+    { q: '讓音樂找到你，而不是你追音樂。' },
+    { q: '你跳舞的樣子，就是你的自畫像。' },
+    { q: '身體記得你試圖忘記的一切。' },
+    { q: '舞台上沒有小動作，只有你有沒有選擇它。' },
+    { q: '感染力不是表演出來的，是放出來的。' },
+    { q: '動作最誠實的瞬間，是你以為沒有人在看的時候。' },
+    { q: '有些事情，只有身體知道怎麼說。' },
+    { q: '你的天花板，是別人的起點。你的起點，也是別人的天花板。' },
+    { q: '不是每個人都能感染別人，但每個人都可以選擇全力以赴。' },
+    { q: '你練習的不只是動作，你練習的是成為自己。' },
+    { q: '最難跳的，永遠是完全放鬆。' },
+    { q: '身體想動的時候，就讓它動。' },
+    { q: '舞蹈是一種語言，而你的身體是方言。' },
+    { q: '正確的重複，才是有效的重複。' },
+    { q: '重心是方向盤，不是掛件。' },
+    { q: '動作的選擇，就是你在那個時刻和觀眾說的話。' },
+    { q: '情緒不是加上去的，是底下的。' },
+    { q: '空間不只是背景，它本身就在說話。' },
+    { q: '身體是一個整體，力量傳遞的路徑從來不是直線。' },
+    { q: '你的問題，從別人身上看得最清楚。' },
+    { q: '赤足站上舞台，是一個宣言：靈魂比技術更重要。' },
+    { q: '一個動作能傳遞什麼，取決於重心、空間和情緒。' },
+    { q: '只要能無限制地運用自己的身體，就能從心所欲地表達自己。' },
+    { q: '舞蹈帶你去的地方，不只是你預期的方向。' },
+    { q: '真正的能力，是在任何狀況下都能做到的東西。' },
+    { q: '在茁壯之前，緩慢本身就已經是生長。' },
+    { q: '我才是我自己最偉大的作品。' },
+    { q: '存在本身，就已經是最大的勝利。' },
+    { q: '有效的衝擊，不是隨便動，而是每一個動，都有效地打到觀眾。' },
+    { q: '舞蹈從來不只是娛樂，它是被邊緣族群用來保存尊嚴的方式。' },
+    { q: '你在舞台上訓練的第三隻眼，和客觀意識是同一件事。' },
+];
+
+let usedQuoteIdxs = [];
+function getQuote() {
+    if (usedQuoteIdxs.length >= QUOTES.length) usedQuoteIdxs = [];
+    let i;
+    do { i = Math.floor(Math.random() * QUOTES.length); } while (usedQuoteIdxs.includes(i));
+    usedQuoteIdxs.push(i);
+    return QUOTES[i];
+}
+
+let ans = {}, curQ = 0, shuffledQs = [], chart = null, currentScores = null, currentType = null, currentTypeCode = null, currentQuality = null;
+
+const AXIS_LETTER = { ct:'C', gb:'G', wz:'W', es:'E', pa:'P' };
+const BG_CYCLE = ['ct','gb','wz','es','pa'];
+
+function buildQuestions() {
+    const qs = [];
+    AXES.forEach(ax => {
+        ax.qs.forEach((q, qi) => {
+            qs.push({ axId: ax.id, qi, text: q, key: `${ax.id}_${qi}`, color: ax.color });
+        });
+    });
+    for (let i = qs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [qs[i], qs[j]] = [qs[j], qs[i]];
+    }
+    return qs;
+}
+
+function startQuiz() {
+    shuffledQs = buildQuestions();
+    curQ = 0;
+    usedQuoteIdxs = [];
+    setBg(BG_CYCLE[0]);
+    showScreen('s-quiz');
+    renderQuestion(0);
+}
+
+function renderQuestion(idx) {
+    const q = shuffledQs[idx];
+    const total = shuffledQs.length;
+    const pct = Math.round((idx / total) * 100);
+
+    setBg(BG_CYCLE[Math.floor(idx / 4) % BG_CYCLE.length]);
+    document.getElementById('prog-axis').textContent = '';
+    document.getElementById('prog-counter').textContent = `${idx + 1} / ${total}`;
+    document.getElementById('prog-fill').style.width = pct + '%';
+    document.getElementById('btn-back').style.visibility = idx === 0 ? 'hidden' : 'visible';
+    document.getElementById('btn-next').textContent = idx === total - 1 ? 'View Result →' : 'Next →';
+
+    const sel = ans[q.key];
+    const qquote = getQuote();
+    document.getElementById('nav-quote').innerHTML = `${qquote.q}<div class="nav-quote-src">${qquote.src || '— GroovePath'}</div>`;
+    document.getElementById('quiz-body').innerHTML = `
+        <div class="q-card">
+            <div class="q-num">Q${String(idx + 1).padStart(2,'0')}</div>
+            <div class="q-text">${q.text}</div>
+            <div class="likert">${[1,2,3,4,5].map(v => {
+                const on = sel === v;
+                const st = on ? `background:${q.color};border-color:${q.color};color:#000` : '';
+                return `<button class="l-btn${on?' on':''}" style="${st}" onclick="pickAnsQ(${idx},${v},'${q.color}',this)">${v}</button>`;
+            }).join('')}</div>
+            <div class="likert-labels"><span>完全不符合</span><span>完全符合</span></div>
+        </div>`;
+    window.scrollTo(0,0);
+}
+
+function pickAnsQ(idx, val, color, btn) {
+    ans[shuffledQs[idx].key] = val;
+    btn.closest('.q-card').querySelectorAll('.l-btn').forEach((b, i) => {
+        const on = i + 1 === val;
+        b.classList.toggle('on', on);
+        b.style.cssText = on ? `background:${color};border-color:${color};color:#000` : '';
+    });
+    setTimeout(() => {
+        if (idx < shuffledQs.length - 1) { curQ = idx + 1; renderQuestion(curQ); }
+        else { showResults(); }
+    }, 380);
+}
+
+function prevQ() { if (curQ > 0) { curQ--; renderQuestion(curQ); } }
+
+function nextQ() {
+    if (ans[shuffledQs[curQ].key] === undefined) {
+        document.getElementById('quiz-body').querySelector('.q-text').style.color = '#FF6080';
+        return;
+    }
+    if (curQ < shuffledQs.length - 1) { curQ++; renderQuestion(curQ); }
+    else { showResults(); }
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+    if (id === 's-intro') setBg('intro');
+    if (id === 's-result') setBg('result');
+}
+
+
+function calcScores() {
+    const s = {};
+    AXES.forEach(ax => {
+        const sum = ax.qs.reduce((a,_,qi) => a+(ans[`${ax.id}_${qi}`]||0), 0);
+        s[ax.id] = Math.round((sum/(ax.qs.length*5))*100);
+    });
+    return s;
+}
+
+function showResults() {
+    currentScores = calcScores();
+
+    // Layer 1: 主類型（最高分軸，5% 誤差內隨機）
+    const sorted = Object.entries(currentScores).sort((a,b)=>b[1]-a[1]);
+    const topScore = sorted[0][1];
+    const topGroup = sorted.filter(([,v]) => topScore - v <= 5);
+    const pid = topGroup[Math.floor(Math.random() * topGroup.length)][0];
+
+    // Layer 2: 副類型（排除主類型後最高分軸）
+    const sid = sorted.filter(([k]) => k !== pid)[0][0];
+
+    // Layer 3: O / C（ES 分 >= PA 分 → Organic，反之 → Craft）
+    const quality = currentScores['es'] >= currentScores['pa'] ? 'O' : 'C';
+
+    currentType = pid;
+    currentTypeCode = AXIS_LETTER[pid] + AXIS_LETTER[sid];
+    currentQuality = quality;
+
+    const t = TYPES[currentTypeCode] || TYPES[Object.keys(TYPES)[0]];
+
+    const badge = document.getElementById('r-badge');
+    badge.textContent = t.badge;
+    badge.style.cssText = `background:${t.color}18;color:${t.color};border:1px solid ${t.color}35`;
+
+    document.getElementById('r-name-zh').textContent = t.name;
+    document.getElementById('r-name-en').textContent = t.nameEn;
+
+    // 類型碼顯示：WE · ?（? = O/C 質感碼，引流款鎖住）
+    const tc = document.getElementById('r-typecode');
+    tc.innerHTML = `
+        <span class="tc-main" style="color:${t.color}">${currentTypeCode}</span>
+        <span class="tc-sep">·</span>
+        <span class="tc-locked">?</span>
+        <div class="tc-hint">還想知道你的質感碼是 O 還是 C？</div>`;
+
+    document.getElementById('r-tagline').textContent = `「${t.tagline}」`;
+    document.getElementById('r-figure').textContent = t.figure;
+    document.getElementById('s1-title').textContent = t.s1t;
+    document.getElementById('s1-body').textContent = t.s1;
+    document.getElementById('s2-title').textContent = t.s2t;
+    document.getElementById('s2-body').textContent = t.s2;
+    document.getElementById('s3-title').textContent = t.s3t;
+    document.getElementById('s3-body').textContent = t.s3;
+    document.getElementById('s4-title').textContent = t.s4t;
+    document.getElementById('s4-body').textContent = t.s4;
+
+    document.getElementById('scores-grid').innerHTML = AXES.map(ax => `
+        <div class="score-card" style="border-top:2px solid ${ax.color}">
+            <div class="score-zh" style="color:${ax.color}">${ax.sub}</div>
+            <div class="score-en">${ax.subEn}</div>
+            <div class="score-bar"><div class="score-bar-fill" style="width:${currentScores[ax.id]}%;background:${ax.color}"></div></div>
+            <div class="score-val">${currentScores[ax.id]}%</div>
+        </div>`).join('');
+
+    // Auto-unlock if already gave email
+    const savedEmail = localStorage.getItem('gp_email');
+    if (savedEmail) {
+        document.getElementById('gate-wrap').style.display = 'none';
+        document.getElementById('unlocked').classList.add('show');
+    } else {
+        document.getElementById('unlocked').classList.remove('show');
+        document.getElementById('gate-wrap').style.display = 'block';
+    }
+
+    showScreen('s-result');
+
+    setTimeout(() => {
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: AXES.map(a => [a.sub, a.subEn]),
+                datasets: [{
+                    data: AXES.map(a => currentScores[a.id]),
+                    backgroundColor: `${t.color}12`,
+                    borderColor: t.color,
+                    borderWidth: 1.5,
+                    pointBackgroundColor: AXES.map(a => a.color),
+                    pointBorderColor: AXES.map(a => a.color),
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { r: {
+                    min:0, max:100,
+                    ticks: { display:false },
+                    grid: { color:'#161E32' },
+                    angleLines: { color:'#161E32' },
+                    pointLabels: {
+                        color: '#B0C2E0',
+                        font: { size: 12, family: 'Noto Sans TC' },
+                        padding: 12
+                    }
+                }},
+                plugins: { legend: { display:false } }
+            }
+        });
+    }, 100);
+}
+
+function unlockReport() {
+    const email = document.getElementById('email-input').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        const inp = document.getElementById('email-input');
+        inp.style.borderColor = '#FF6080';
+        inp.placeholder = '請輸入有效的 Email';
+        return;
+    }
+    localStorage.setItem('gp_email', email);
+    localStorage.setItem('gp_type', currentType);
+    document.getElementById('gate-wrap').style.display = 'none';
+    const u = document.getElementById('unlocked');
+    u.classList.add('show');
+    u.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function buildShareText() {
+    const t = TYPES[currentTypeCode];
+    const fig = t.figure.replace('代表人物：', '');
+    const url = window.location.href;
+    const scores = AXES.map(a => `${a.sub} ${a.subEn}：${currentScores[a.id]}%`).join('\n');
+    const body = [
+        '',
+        '【GroovePath 舞者人格評估】',
+        `我的類型：${t.name}`,
+        `「${t.tagline}」`,
+        `代表人物：${fig}`,
+        '',
+        scores,
+        '',
+        '說出了我一個不想承認的部分。你也來測，我想知道你是哪個 →',
+        '',
+        url,
+    ].join('\n');
+
+    const hooks = [
+        `吼唷乾嘛啦⋯我剛測完太害羞了，說我像${fig}\n我是${t.name}型啦！`,
+        `等等⋯到底像不像我啦！這個測驗說我是「${t.name}」？？\n說我像${fig}，我不知道該驕傲還是被說中了`,
+        `你知道GroovePath的舞者人格嗎，我剛測完，然後它說了一件我不想承認的事\n我是${t.name}，代表人物${fig}`,
+        `暴一ㄙ喔我是${t.name}。就這樣。測驗都這樣說了，說得比我還準。\n（代表人物：${fig}，拜託）`,
+        `來哩來，我看看你的，你說我們很熟是唄？先去測這個\n結果我是${t.name}，像${fig}，說出了我一個秘密`,
+        `我剛剛超懷疑，我在想的是：為什麼一個測驗比我更了解我自己\n我是${t.name}，然後它說⋯我是「${t.tagline}」`,
+        `看看本命死黨你是哪位！快給我去測這個！！\n我是${t.name}，代表人物${fig}，截圖截圖給我答案喔你是哪個？`,
+        `中了啦中了啦，測完才知道我原來是${t.name}型\n「${t.tagline}」⋯不解釋！這句話，我就收下了吧，你的趕快截圖喔！`,
+        `OK fine~ 好吧⋯我是！！！測驗說我像${fig}我也沒辦法否認\n我是${t.name}，你勒？還不測一道試試，我超想知道你是哪型、像誰`,
+        `我當場嚇了一跳，我還一直以為我了解自己，測驗比我還懂！直到測完這個\n${t.name} · ${fig}，然後我沉默了五秒，懂得都懂啦！`,
+    ];
+
+    const hook = hooks[Math.floor(Math.random() * hooks.length)];
+    return hook + body;
+}
+
+async function inviteFriend(btn) {
+    const text = buildShareText();
+    if (navigator.share) {
+        try {
+            await navigator.share({ text });
+            return;
+        } catch(e) { /* 取消或不支援，改用複製 */ }
+    }
+    navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '已複製！去貼給朋友 ✓';
+        setTimeout(() => btn.textContent = orig, 2500);
+    });
+}
+
+function restartQuiz() {
+    ans={}; curQ=0; shuffledQs=[]; currentScores=null; currentType=null; currentTypeCode=null; currentQuality=null;
+    if(chart){chart.destroy();chart=null;}
+    showScreen('s-intro');
+}
+</script>
+</body>
+</html>
