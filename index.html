@@ -1732,6 +1732,21 @@ async function unlockReport() {
         return;
     }
 
+    // Rate limit: same device can only submit once per hour
+    const lastSubmit = localStorage.getItem('gp_last_submit');
+    if (lastSubmit && Date.now() - parseInt(lastSubmit) < 3600000) {
+        localStorage.setItem('gp_email', email);
+        localStorage.setItem('gp_type', currentType);
+        localStorage.setItem('gp_typecode', currentTypeCode);
+        localStorage.setItem('gp_scores', JSON.stringify(currentScores));
+        history.replaceState(null, '', '#type=' + currentTypeCode);
+        document.getElementById('gate-wrap').style.display = 'none';
+        const u = document.getElementById('unlocked');
+        u.classList.add('show');
+        u.scrollIntoView({ behavior:'smooth', block:'start' });
+        return;
+    }
+
     // Show sending state
     btn.textContent = '傳送中...';
     btn.disabled = true;
@@ -1777,6 +1792,7 @@ async function unlockReport() {
     localStorage.setItem('gp_type', currentType);
     localStorage.setItem('gp_typecode', currentTypeCode);
     localStorage.setItem('gp_scores', JSON.stringify(currentScores));
+    localStorage.setItem('gp_last_submit', Date.now().toString());
     history.replaceState(null, '', '#type=' + currentTypeCode);
     document.getElementById('gate-wrap').style.display = 'none';
     const u = document.getElementById('unlocked');
