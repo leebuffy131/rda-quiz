@@ -292,8 +292,14 @@
 
         /* ── SINGLE QUESTION CARD ── */
         .q-card {
-            padding: 0 0 32px;
+            padding: 20px 20px 32px;
             min-height: 220px;
+            background: rgba(7, 9, 15, 0.72);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            margin-bottom: 8px;
         }
         .nav-quote {
             font-family: 'Noto Sans TC', sans-serif;
@@ -1085,6 +1091,10 @@ const BG = {
     wz:     "url('P15_audience_2_gray.png')",
     es:     "url('Radiant_Life_Blueprint.png')",
     pa:     "url('P12_film_production_background.png')",
+    p9:     "url('P9_system_zoom_door_fade.png')",
+    p10:    "url('P10_timeline_8_nodes.png')",
+    p11:    "url('P11_three_pillars_background.png')",
+    p16:    "url('P16_audience_3_bright.png')",
     result: "url('Jungian_Heros_Journey_Blueprint.png')",
     CG: "url('bg_CG.png')", CW: "url('bg_CW.png')", CE: "url('bg_CE.png')", CP: "url('bg_CP.png')",
     GC: "url('bg_GC.png')", GW: "url('bg_GW.png')", GE: "url('bg_GE.png')", GP: "url('bg_GP.png')",
@@ -1468,7 +1478,7 @@ function getQuote() {
 let ans = {}, curQ = 0, shuffledQs = [], chart = null, currentScores = null, currentType = null, currentTypeCode = null, currentQuality = null;
 
 const AXIS_LETTER = { ct:'C', gb:'G', wz:'W', es:'E', pa:'P' };
-const BG_CYCLE = ['ct','gb','wz','es','pa'];
+const BG_CYCLE = ['p9','p10','p11','ct','wz','p16'];
 
 function buildQuestions() {
     const qs = [];
