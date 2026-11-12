@@ -882,6 +882,25 @@
             width: 100%;
             max-width: 360px;
         }
+        .onboard-hint {
+            width: 100%;
+            max-width: 360px;
+            margin-bottom: 24px;
+            padding: 14px 16px;
+            background: rgba(212,175,55,0.07);
+            border-left: 2px solid var(--gold);
+            border-radius: 0 6px 6px 0;
+        }
+        .onboard-hint p {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.8;
+            margin: 0;
+        }
+        .onboard-hint p + p {
+            margin-top: 4px;
+        }
 
         /* Share */
         .share-wrap {
@@ -947,6 +966,11 @@
                     <button class="gender-btn" id="g-female" onclick="selectGender('female')">女生</button>
                     <button class="gender-btn" id="g-other" onclick="selectGender('other')">不說</button>
                 </div>
+            </div>
+
+            <div class="onboard-hint">
+                <p>這個測評測的不是你跳得多好，是你的身體邏輯是什麼類型。</p>
+                <p>按照你現在的狀態填，沒有學過舞蹈也可以。</p>
             </div>
 
             <div class="onboard-cta-wrap">
