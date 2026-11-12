@@ -1636,7 +1636,7 @@ function renderResult() {
     document.getElementById('s1-title').textContent = t.s1t;
     // Show first 2 sentences only, fade the rest to drive gate conversion
     const s1Sentences = t.s1.split('。').filter(s => s.trim().length > 0);
-    const s1Preview = s1Sentences.slice(0, 2).join('。') + '。';
+    const s1Preview = s1Sentences.slice(0, 1).join('。') + '。';
     const s1El = document.getElementById('s1-body');
     s1El.textContent = s1Preview;
     s1El.classList.add('s1-preview');
