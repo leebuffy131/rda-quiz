@@ -1674,7 +1674,7 @@ function renderResult() {
         chart = new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: AXES.map(a => [a.sub, a.subEn]),
+                labels: AXES.map(a => [a.sub, a.subEn, `${currentScores[a.id]}%`]),
                 datasets: [{
                     data: AXES.map(a => currentScores[a.id]),
                     backgroundColor: `${t.color}12`,
@@ -1696,7 +1696,7 @@ function renderResult() {
                     pointLabels: {
                         color: '#B0C2E0',
                         font: { size: 12, family: 'Noto Sans TC' },
-                        padding: 12
+                        padding: 14
                     }
                 }},
                 plugins: { legend: { display:false } }
