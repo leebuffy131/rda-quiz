@@ -562,8 +562,23 @@
             font-weight: 300;
         }
 
+        /* S1 preview fade */
+        .s1-preview {
+            position: relative;
+        }
+        .s1-preview::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(transparent, var(--bg));
+            pointer-events: none;
+        }
+
         /* Email Gate */
-        .gate-wrap { position: relative; margin-bottom: 48px; }
+        .gate-wrap { position: relative; margin-bottom: 48px; margin-top: -24px; }
 
         .gate-blur {
             filter: blur(8px);
@@ -1619,7 +1634,12 @@ function renderResult() {
     document.getElementById('r-tagline').textContent = `${namePrefix}「${t.tagline}」`;
     document.getElementById('r-figure').textContent = t.figure;
     document.getElementById('s1-title').textContent = t.s1t;
-    document.getElementById('s1-body').textContent = t.s1;
+    // Show first 2 sentences only, fade the rest to drive gate conversion
+    const s1Sentences = t.s1.split('。').filter(s => s.trim().length > 0);
+    const s1Preview = s1Sentences.slice(0, 2).join('。') + '。';
+    const s1El = document.getElementById('s1-body');
+    s1El.textContent = s1Preview;
+    s1El.classList.add('s1-preview');
     document.getElementById('s2-title').textContent = t.s2t;
     document.getElementById('s2-body').textContent = t.s2;
     document.getElementById('s3-title').textContent = t.s3t;
