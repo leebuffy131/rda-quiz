@@ -6,6 +6,7 @@
     <title>GroovePath｜Dancer Identity System</title>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -215,6 +216,19 @@
             box-shadow: none;
             transform: none;
         }
+        .btn-dl {
+            background: linear-gradient(135deg, #C9A96E 0%, #E8C88A 100%);
+            color: #07090F;
+            font-weight: 700;
+        }
+        .btn-dl:hover {
+            background: linear-gradient(135deg, #D4B87E 0%, #F0D49A 100%);
+            box-shadow: 0 0 32px rgba(201,169,110,0.35);
+        }
+        .btn-dl:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
 
         .meta-note {
             font-family: 'Space Grotesk', sans-serif;
@@ -292,14 +306,8 @@
 
         /* ── SINGLE QUESTION CARD ── */
         .q-card {
-            padding: 20px 20px 32px;
+            padding: 0 0 32px;
             min-height: 220px;
-            background: rgba(7, 9, 15, 0.72);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            margin-bottom: 8px;
         }
         .nav-quote {
             font-family: 'Noto Sans TC', sans-serif;
@@ -568,23 +576,8 @@
             font-weight: 300;
         }
 
-        /* S1 preview fade */
-        .s1-preview {
-            position: relative;
-        }
-        .s1-preview::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: linear-gradient(transparent, var(--bg));
-            pointer-events: none;
-        }
-
         /* Email Gate */
-        .gate-wrap { position: relative; margin-bottom: 48px; margin-top: -24px; }
+        .gate-wrap { position: relative; margin-bottom: 48px; }
 
         .gate-blur {
             filter: blur(8px);
@@ -882,25 +875,6 @@
             width: 100%;
             max-width: 360px;
         }
-        .onboard-hint {
-            width: 100%;
-            max-width: 360px;
-            margin-bottom: 24px;
-            padding: 14px 16px;
-            background: rgba(212,175,55,0.07);
-            border-left: 2px solid var(--gold);
-            border-radius: 0 6px 6px 0;
-        }
-        .onboard-hint p {
-            font-family: 'Noto Sans TC', sans-serif;
-            font-size: 13px;
-            color: var(--text-dim);
-            line-height: 1.8;
-            margin: 0;
-        }
-        .onboard-hint p + p {
-            margin-top: 4px;
-        }
 
         /* Share */
         .share-wrap {
@@ -966,11 +940,6 @@
                     <button class="gender-btn" id="g-female" onclick="selectGender('female')">女生</button>
                     <button class="gender-btn" id="g-other" onclick="selectGender('other')">不說</button>
                 </div>
-            </div>
-
-            <div class="onboard-hint">
-                <p>這個測評測的不是你跳得多好，是你的身體邏輯是什麼類型。</p>
-                <p>按照你現在的狀態填，沒有學過舞蹈也可以。</p>
             </div>
 
             <div class="onboard-cta-wrap">
@@ -1042,17 +1011,16 @@
             <div class="gate-overlay">
                 <div class="gate-card">
                     <div class="gate-label">Unlock Full Report</div>
-                    <div class="gate-title">解鎖完整舞者人格報告</div>
-                    <div class="gate-desc">請輸入您的 Email，我們將寄出免費完整分析。</div>
-                    <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#6B80A0;margin-bottom:12px;font-family:'Space Grotesk',sans-serif;">還想知道？</div>
+                    <div class="gate-title">你不是唯一一個卡在這裡的人</div>
+                    <div class="gate-desc">加入正在找答案的舞者，收到你的專屬突破建議</div>
                     <div class="gate-items">
-                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>你藏起來的那一面 <span style="color:#6B80A0;font-size:0.85em">— 連你自己都不常說的</span></span></div>
-                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>你天生的武器 <span style="color:#6B80A0;font-size:0.85em">— 你可能還沒意識到</span></span></div>
-                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>還有一件事 <span style="color:#6B80A0;font-size:0.85em">— 只有你這個型態才有</span></span></div>
-                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>五軸精確評分 <span style="color:#6B80A0;font-size:0.85em">— 你在每個維度的真實位置</span></span></div>
+                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>你藏起來的那一面</span></div>
+                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>你天生的武器</span></div>
+                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>還有一件事</span></div>
+                        <div class="gate-item"><div class="gate-tick"><div class="gate-tick-inner"></div></div><span>五軸評分明細</span></div>
                     </div>
                     <input class="email-input" id="email-input" type="email" placeholder="your@email.com">
-                    <button class="btn btn-full" onclick="unlockReport()">免費獲取完整報告 →</button>
+                    <button class="btn btn-full" onclick="unlockReport()">加入，解鎖完整報告 →</button>
                     <p style="font-size:11px;color:#888;text-align:center;margin-top:12px;">點擊送出即表示您同意本站<a href="https://leeyoucheng.com/privacy-policy-2/" target="_blank" style="color:#888;text-decoration:underline;">隱私權政策</a> 及 <a href="https://leeyoucheng.com/terms-conditions/" target="_blank" style="color:#888;text-decoration:underline;">使用者條款</a> </p>
                 </div>
             </div>
@@ -1088,6 +1056,7 @@
                 <div class="share-label">Share Your Dancer Identity</div>
                 <div class="share-row">
                     <button class="btn" onclick="inviteFriend(this)">不能只有我知道，看看死黨是哪一型 →</button>
+                    <button class="btn btn-dl" onclick="downloadStoryCard(this)">📲 下載 IG 限動圖卡</button>
                     <button class="btn btn-ghost" onclick="restartQuiz()">重新評估</button>
                 </div>
             </div>
@@ -1115,10 +1084,6 @@ const BG = {
     wz:     "url('P15_audience_2_gray.png')",
     es:     "url('Radiant_Life_Blueprint.png')",
     pa:     "url('P12_film_production_background.png')",
-    p9:     "url('P9_system_zoom_door_fade.png')",
-    p10:    "url('P10_timeline_8_nodes.png')",
-    p11:    "url('P11_three_pillars_background.png')",
-    p16:    "url('P16_audience_3_bright.png')",
     result: "url('Jungian_Heros_Journey_Blueprint.png')",
     CG: "url('bg_CG.png')", CW: "url('bg_CW.png')", CE: "url('bg_CE.png')", CP: "url('bg_CP.png')",
     GC: "url('bg_GC.png')", GW: "url('bg_GW.png')", GE: "url('bg_GE.png')", GP: "url('bg_GP.png')",
@@ -1502,7 +1467,7 @@ function getQuote() {
 let ans = {}, curQ = 0, shuffledQs = [], chart = null, currentScores = null, currentType = null, currentTypeCode = null, currentQuality = null;
 
 const AXIS_LETTER = { ct:'C', gb:'G', wz:'W', es:'E', pa:'P' };
-const BG_CYCLE = ['p9','p10','p11','ct','wz','p16'];
+const BG_CYCLE = ['ct','gb','wz','es','pa'];
 
 function buildQuestions() {
     const qs = [];
@@ -1669,13 +1634,7 @@ function renderResult() {
     document.getElementById('r-tagline').textContent = `${namePrefix}「${t.tagline}」`;
     document.getElementById('r-figure').textContent = t.figure;
     document.getElementById('s1-title').textContent = t.s1t;
-    // Show first 2 sentences only, fade the rest to drive gate conversion
-    const s1Sentences = t.s1.split('。').filter(s => s.trim().length > 0);
-    const s1Half = Math.ceil(s1Sentences.length / 2);
-    const s1Preview = s1Sentences.slice(0, s1Half).join('。') + '。';
-    const s1El = document.getElementById('s1-body');
-    s1El.textContent = s1Preview;
-    s1El.classList.add('s1-preview');
+    document.getElementById('s1-body').textContent = t.s1;
     document.getElementById('s2-title').textContent = t.s2t;
     document.getElementById('s2-body').textContent = t.s2;
     document.getElementById('s3-title').textContent = t.s3t;
@@ -1709,7 +1668,7 @@ function renderResult() {
         chart = new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: AXES.map(a => [a.sub, a.subEn, `${currentScores[a.id]}%`]),
+                labels: AXES.map(a => [a.sub, a.subEn]),
                 datasets: [{
                     data: AXES.map(a => currentScores[a.id]),
                     backgroundColor: `${t.color}12`,
@@ -1731,7 +1690,7 @@ function renderResult() {
                     pointLabels: {
                         color: '#B0C2E0',
                         font: { size: 12, family: 'Noto Sans TC' },
-                        padding: 14
+                        padding: 12
                     }
                 }},
                 plugins: { legend: { display:false } }
@@ -1788,21 +1747,6 @@ async function unlockReport() {
         return;
     }
 
-    // Rate limit: same device can only submit once per hour
-    const lastSubmit = localStorage.getItem('gp_last_submit');
-    if (lastSubmit && Date.now() - parseInt(lastSubmit) < 3600000) {
-        localStorage.setItem('gp_email', email);
-        localStorage.setItem('gp_type', currentType);
-        localStorage.setItem('gp_typecode', currentTypeCode);
-        localStorage.setItem('gp_scores', JSON.stringify(currentScores));
-        history.replaceState(null, '', '#type=' + currentTypeCode);
-        document.getElementById('gate-wrap').style.display = 'none';
-        const u = document.getElementById('unlocked');
-        u.classList.add('show');
-        u.scrollIntoView({ behavior:'smooth', block:'start' });
-        return;
-    }
-
     // Show sending state
     btn.textContent = '傳送中...';
     btn.disabled = true;
@@ -1848,7 +1792,6 @@ async function unlockReport() {
     localStorage.setItem('gp_type', currentType);
     localStorage.setItem('gp_typecode', currentTypeCode);
     localStorage.setItem('gp_scores', JSON.stringify(currentScores));
-    localStorage.setItem('gp_last_submit', Date.now().toString());
     history.replaceState(null, '', '#type=' + currentTypeCode);
     document.getElementById('gate-wrap').style.display = 'none';
     const u = document.getElementById('unlocked');
@@ -1963,6 +1906,249 @@ document.addEventListener('DOMContentLoaded', function() {
 
     renderResult();
 });
+
+// ── IG 限動圖卡下載 ───────────────────────────────────────────────────────────
+
+async function downloadStoryCard(btn) {
+    const orig = btn.textContent;
+    btn.textContent = '製作中⋯';
+    btn.disabled = true;
+
+    try {
+        await document.fonts.ready;
+
+        const W = 1080, H = 1920;
+        const cv = document.createElement('canvas');
+        cv.width = W; cv.height = H;
+        const c = cv.getContext('2d');
+
+        const t = TYPES[currentTypeCode];
+        const col = t.color;
+
+        // ── Background ──
+        c.fillStyle = '#07090F';
+        c.fillRect(0, 0, W, H);
+
+        const gRadial = c.createRadialGradient(W / 2, 500, 0, W / 2, 500, 750);
+        gRadial.addColorStop(0, col + '30');
+        gRadial.addColorStop(1, 'transparent');
+        c.fillStyle = gRadial;
+        c.fillRect(0, 0, W, H);
+
+        const gFade = c.createLinearGradient(0, H - 350, 0, H);
+        gFade.addColorStop(0, 'transparent');
+        gFade.addColorStop(1, '#07090F');
+        c.fillStyle = gFade;
+        c.fillRect(0, H - 350, W, 350);
+
+        // ── Top accent line ──
+        c.fillStyle = '#C9A96E';
+        c.fillRect(80, 108, 60, 3);
+
+        // ── Wordmark ──
+        c.font = '600 30px "Space Grotesk"';
+        c.fillStyle = '#DDE3F0';
+        c.textBaseline = 'alphabetic';
+        c.fillText('GROOVEPATH', 80, 165);
+
+        // ── Badge pill ──
+        const badgeTxt = t.badge;
+        c.font = '500 24px "Space Grotesk"';
+        const bw = c.measureText(badgeTxt).width + 48;
+        c.fillStyle = col + '20';
+        _rrFill(c, 80, 192, bw, 46, 6);
+        c.strokeStyle = col + '45';
+        c.lineWidth = 1;
+        _rrStroke(c, 80, 192, bw, 46, 6);
+        c.fillStyle = col;
+        c.textBaseline = 'middle';
+        c.fillText(badgeTxt, 104, 215);
+
+        // ── Type code ──
+        c.font = '700 180px "Space Grotesk"';
+        c.fillStyle = col;
+        c.textBaseline = 'alphabetic';
+        c.fillText(currentTypeCode, 72, 450);
+
+        // ── Chinese name ──
+        c.font = '900 60px "Noto Sans TC"';
+        c.fillStyle = '#DDE3F0';
+        c.fillText(t.name, 80, 532);
+
+        // ── English name ──
+        c.font = '300 32px "Space Grotesk"';
+        c.fillStyle = '#8899BB';
+        c.fillText(t.nameEn, 80, 580);
+
+        // ── Divider ──
+        c.fillStyle = '#18223A';
+        c.fillRect(80, 612, W - 160, 1);
+
+        // ── Tagline ──
+        c.font = '400 38px "Noto Sans TC"';
+        c.fillStyle = '#DDE3F0CC';
+        const tagLines = _wrapText(c, `「${t.tagline}」`, W - 160);
+        tagLines.forEach((line, i) => { c.fillText(line, 80, 666 + i * 56); });
+        const afterTag = 666 + tagLines.length * 56;
+
+        // ── Radar chart ──
+        const R = 210;
+        const rcx = W / 2, rcy = afterTag + 60 + R;
+        _drawRadar(c, rcx, rcy, R, currentScores, col);
+
+        // ── Score bars ──
+        const scoreY = rcy + R + 70;
+        const colW = (W - 160) / 5;
+        c.textAlign = 'center';
+        AXES.forEach((ax, i) => {
+            const sx = 80 + i * colW;
+            const pct = currentScores[ax.id];
+            c.fillStyle = '#18223A';
+            _rrFill(c, sx + 6, scoreY, colW - 12, 5, 3);
+            c.fillStyle = ax.color;
+            if (pct > 0) _rrFill(c, sx + 6, scoreY, Math.max(4, (colW - 12) * pct / 100), 5, 3);
+            c.font = '600 22px "Space Grotesk"';
+            c.fillStyle = ax.color;
+            c.fillText(ax.sub, sx + colW / 2, scoreY + 34);
+            c.font = '400 20px "Space Grotesk"';
+            c.fillStyle = '#6678AA';
+            c.fillText(`${pct}%`, sx + colW / 2, scoreY + 58);
+        });
+        c.textAlign = 'left';
+
+        // ── Divider ──
+        const qrTopY = scoreY + 80;
+        c.fillStyle = '#18223A';
+        c.fillRect(80, qrTopY, W - 160, 1);
+
+        // ── QR invite text ──
+        c.textAlign = 'center';
+        c.font = '500 34px "Noto Sans TC"';
+        c.fillStyle = '#DDE3F0';
+        c.fillText('你也來測一測', W / 2, qrTopY + 60);
+        c.font = '300 26px "Space Grotesk"';
+        c.fillStyle = '#C9A96E';
+        c.fillText('groovepath.leeyoucheng.com/quiz', W / 2, qrTopY + 102);
+
+        // ── QR code ──
+        const qrSize = 200;
+        const qrImgY = qrTopY + 128;
+        try {
+            const qrDataUrl = await QRCode.toDataURL('https://groovepath.leeyoucheng.com/quiz', {
+                width: qrSize, margin: 2,
+                color: { dark: '#DDE3F0', light: '#00000000' }
+            });
+            await new Promise((res, rej) => {
+                const img = new Image();
+                img.onload = () => { c.drawImage(img, W / 2 - qrSize / 2, qrImgY, qrSize, qrSize); res(); };
+                img.onerror = rej;
+                img.src = qrDataUrl;
+            });
+        } catch (e) { /* QR failed silently */ }
+
+        // ── Player name ──
+        if (playerName) {
+            c.font = '300 26px "Noto Sans TC"';
+            c.fillStyle = '#4E5E7E';
+            c.fillText(`${playerName} 的評測結果`, W / 2, H - 100);
+        }
+
+        // ── Copyright ──
+        c.font = '300 22px "Space Grotesk"';
+        c.fillStyle = '#3A4A6A';
+        c.fillText('© 2026 GroovePath · Dancer Identity System', W / 2, H - 58);
+        c.textAlign = 'left';
+
+        // ── Download ──
+        const a = document.createElement('a');
+        a.download = `GroovePath_${currentTypeCode}_${playerName || '結果'}.png`;
+        a.href = cv.toDataURL('image/png');
+        a.click();
+
+    } catch (err) {
+        console.error('圖卡生成失敗:', err);
+        alert('圖卡生成失敗，請重試');
+    }
+
+    btn.textContent = orig;
+    btn.disabled = false;
+}
+
+function _wrapText(ctx, text, maxW) {
+    const lines = [];
+    let line = '';
+    for (const ch of text) {
+        const test = line + ch;
+        if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = ch; }
+        else line = test;
+    }
+    if (line) lines.push(line);
+    return lines;
+}
+
+function _rrFill(ctx, x, y, w, h, r) {
+    ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill();
+}
+
+function _rrStroke(ctx, x, y, w, h, r) {
+    ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.stroke();
+}
+
+function _drawRadar(ctx, cx, cy, R, scores, color) {
+    const n = AXES.length;
+    const step = (Math.PI * 2) / n;
+    const start = -Math.PI / 2;
+
+    for (let ring = 1; ring <= 5; ring++) {
+        ctx.beginPath();
+        for (let i = 0; i < n; i++) {
+            const a = start + i * step, rr = R * ring / 5;
+            const x = cx + rr * Math.cos(a), y = cy + rr * Math.sin(a);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = ring === 5 ? '#2E3A54' : '#18223A';
+        ctx.lineWidth = ring === 5 ? 1.5 : 1;
+        ctx.stroke();
+    }
+
+    for (let i = 0; i < n; i++) {
+        const a = start + i * step;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + R * Math.cos(a), cy + R * Math.sin(a));
+        ctx.strokeStyle = '#18223A'; ctx.lineWidth = 1; ctx.stroke();
+    }
+
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+        const a = start + i * step, val = scores[AXES[i].id] / 100;
+        const x = cx + R * val * Math.cos(a), y = cy + R * val * Math.sin(a);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = color + '25'; ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.stroke();
+
+    for (let i = 0; i < n; i++) {
+        const a = start + i * step, val = scores[AXES[i].id] / 100;
+        const x = cx + R * val * Math.cos(a), y = cy + R * val * Math.sin(a);
+        ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill();
+    }
+
+    for (let i = 0; i < n; i++) {
+        const a = start + i * step;
+        const lx = cx + (R + 58) * Math.cos(a), ly = cy + (R + 58) * Math.sin(a);
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = '600 24px "Space Grotesk"';
+        ctx.fillStyle = AXES[i].color;
+        ctx.fillText(AXES[i].sub, lx, ly - 13);
+        ctx.font = '400 20px "Space Grotesk"';
+        ctx.fillStyle = '#6678AA';
+        ctx.fillText(`${scores[AXES[i].id]}%`, lx, ly + 11);
+    }
+}
 </script>
 </body>
 </html>
